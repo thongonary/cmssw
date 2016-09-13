@@ -119,6 +119,7 @@ private:
   bool                       t_selectTk, t_qltyMissFlag, t_qltyPVFlag;
   std::vector<unsigned int> *t_DetIds, *t_DetIds1, *t_DetIds3;
   std::vector<double>       *t_HitEnergies, *t_HitEnergies1, *t_HitEnergies3;
+  std::vector<double>       *t_Timing, *t_Timing1, *t_Timing3;
 
   TH1F                      *h_nTrk, *h_nVtx;
   TProfile                  *h_RecHit_iEta, *h_RecHit_num;
@@ -395,6 +396,9 @@ void IsoTrackCalibration::analyze(const edm::Event& iEvent,
 	  t_DetIds->clear();
 	  t_DetIds1->clear();
 	  t_DetIds3->clear();
+	  t_Timing->clear();
+	  t_Timing1->clear();
+	  t_Timing3->clear();
 	  t_HitEnergies->clear();
 	  t_HitEnergies1->clear();
 	  t_HitEnergies3->clear();
@@ -404,7 +408,7 @@ void IsoTrackCalibration::analyze(const edm::Event& iEvent,
 	  t_eHcal = spr::eCone_hcal(geo, hbhe, trkDetItr->pointHCAL, 
 				    trkDetItr->pointECAL, a_coneR_, 
 				    trkDetItr->directionHCAL,nRecHits, 
-				    ids, *t_HitEnergies);
+				    ids, *t_HitEnergies, *t_Timing);
 	  t_DetIds->reserve(ids.size());
 	  for (unsigned int k = 0; k < ids.size(); ++k) {
 	    t_DetIds->push_back(ids[k].rawId());
@@ -413,7 +417,7 @@ void IsoTrackCalibration::analyze(const edm::Event& iEvent,
 	  t_eHcal10 = spr::eCone_hcal(geo, hbhe, trkDetItr->pointHCAL,
 				      trkDetItr->pointECAL, a_coneR_+10,
 				      trkDetItr->directionHCAL,nRecHits1,
-				      ids1, *t_HitEnergies1);
+				      ids1, *t_HitEnergies1, *t_Timing1);
 	  t_DetIds1->reserve(ids1.size());
 	  for (unsigned int k = 0; k < ids1.size(); ++k) {
 	    t_DetIds1->push_back(ids1[k].rawId());
@@ -422,7 +426,7 @@ void IsoTrackCalibration::analyze(const edm::Event& iEvent,
 	  t_eHcal30 = spr::eCone_hcal(geo, hbhe, trkDetItr->pointHCAL,
 				      trkDetItr->pointECAL, a_coneR_+30,
 				      trkDetItr->directionHCAL,nRecHits3,
-				      ids3, *t_HitEnergies3);
+				      ids3, *t_HitEnergies3, *t_Timing3);
 	  t_DetIds3->reserve(ids3.size());
 	  for (unsigned int k = 0; k < ids3.size(); ++k) {
 	    t_DetIds3->push_back(ids3[k].rawId());

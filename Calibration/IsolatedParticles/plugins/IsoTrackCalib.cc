@@ -136,7 +136,7 @@ private:
   
   bool                       t_selectTk,t_qltyFlag,t_qltyMissFlag,t_qltyPVFlag;
   std::vector<unsigned int> *t_DetIds;
-  std::vector<double>       *t_HitEnergies, pbin;
+  std::vector<double>       *t_HitEnergies, pbin, *t_Timing;
   TProfile                  *h_RecHit_iEta, *h_RecHit_num;
   TH1I                      *h_iEta, *h_tkEta0[5], *h_tkEta1[5], *h_tkEta2[5];
   TH1I                      *h_tkEta3[5], *h_tkEta4[5], *h_tkEta5[5];
@@ -518,7 +518,7 @@ void IsoTrackCalib::analyze(const edm::Event& iEvent,
 	  t_eHcal = spr::eCone_hcal(geo, hbhe, trkDetItr->pointHCAL, 
 				    trkDetItr->pointECAL, a_coneR, 
 				    trkDetItr->directionHCAL,nRecHits, 
-				    ids, *t_HitEnergies);
+				    ids, *t_HitEnergies, *t_Timing);
 	  for (unsigned int k=0; k<ids.size(); ++k) {
 	    t_DetIds->push_back(ids[k].rawId());
 	  }
@@ -637,9 +637,11 @@ void IsoTrackCalib::beginJob() {
 
   t_DetIds      = new std::vector<unsigned int>();
   t_HitEnergies = new std::vector<double>();
+  t_Timing = new std::vector<double>();
   t_l1bits      = new std::vector<bool>(); 
   tree->Branch("t_DetIds",      "std::vector<unsigned int>", &t_DetIds);
   tree->Branch("t_HitEnergies", "std::vector<double>",       &t_HitEnergies);
+  tree->Branch("t_Timing", "std::vector<double>",       &t_Timing);
   tree->Branch("t_l1bits","std::vector<bool>", &t_l1bits);
 }
 

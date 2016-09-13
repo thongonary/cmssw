@@ -123,7 +123,7 @@ private:
   double                     t_mindR2, t_eMipDR, t_eHcal, t_eHcalDelta, t_hmaxNearP;
   bool                       t_selectTk,t_qltyFlag,t_qltyMissFlag,t_qltyPVFlag;
   std::vector<unsigned int> *t_DetIds;
-  std::vector<double>       *t_HitEnergies, pbin;
+  std::vector<double>       *t_HitEnergies, pbin, *t_Timing;
   std::vector<bool>         *t_trgbits; 
   int                        t_Tracks, t_TracksProp, t_TracksSaved;
   std::vector<int>          *t_ietaAll, *t_ietaGood;
@@ -498,10 +498,12 @@ void HcalIsoTrkAnalyzer::beginJob() {
 
   t_DetIds      = new std::vector<unsigned int>();
   t_HitEnergies = new std::vector<double>();
+  t_Timing = new std::vector<double>();
   t_trgbits     = new std::vector<bool>();
   tree->Branch("t_DetIds",      "std::vector<unsigned int>", &t_DetIds);
   tree->Branch("t_HitEnergies", "std::vector<double>",       &t_HitEnergies);
-  tree->Branch("t_trgbits",     "std::vector<bool>",         &t_trgbits); 
+  tree->Branch("t_trgbits",     "std::vector<bool>",         &t_trgbits);
+  tree->Branch("t_Timing", "std::vector<double>", &t_Timing); 
 
   tree2 = fs->make<TTree>("EventInfo", "Event Information");
      
@@ -529,6 +531,7 @@ void HcalIsoTrkAnalyzer::beginRun(edm::Run const& iRun, edm::EventSetup const& i
 #ifdef DebugLog
     edm::LogInfo("HcalIsoTrack") << "New trigger menu found !!!";
 #endif
+  if (!ignoreTrigger_) {
     const unsigned int n(hltConfig_.size());
     for (unsigned itrig=0; itrig<trigNames_.size(); itrig++) {
       unsigned int triggerindx = hltConfig_.triggerIndex(trigNames_[itrig]);
@@ -543,6 +546,7 @@ void HcalIsoTrkAnalyzer::beginRun(edm::Run const& iRun, edm::EventSetup const& i
 #endif
       }
     }
+  }
   }
 }
 
@@ -620,40 +624,65 @@ int HcalIsoTrkAnalyzer::fillTree(std::vector< math::XYZTLorentzVector>& vecL1,
     t_qltyPVFlag   = spr::goodTrack(pTrack,leadPV,oneCutParameters,false);
     t_ieta         = 0;
     t_p            = pTrack->p();
+    
     if (trkDetItr->okHCAL) {
       HcalDetId detId = (HcalDetId)(trkDetItr->detIdHCAL);
       t_ieta = detId.ieta();
       if (t_p > 40.0 && t_p <= 60.0) t_ietaAll->push_back(t_ieta);
     }
 #ifdef DebugLog
-    edm::LogInfo("HcalIsoTrack") << "qltyFlag|okECAL|okHCAL : " 
-				 << qltyFlag << "|" << trkDetItr->okECAL
-				 << "|" << trkDetItr->okHCAL;
+//    edm::LogInfo("HcalIsoTrack") << "qltyFlag|okECAL|okHCAL : " 
+//				 << qltyFlag << "|" << trkDetItr->okECAL
+//				 << "|" << trkDetItr->okHCAL;
 #endif
-    t_qltyFlag = (qltyFlag && trkDetItr->okECAL && trkDetItr->okHCAL);
-    if (t_qltyFlag) {
+    t_qltyFlag = (qltyFlag && trkDetItr->okECAL && trkDetItr->okHCAL);    
+    
+    
+   /* 
+    if (t_Event == 819026118 && t_Run == 210614)  std::cout << "t_Event = " << t_Event << "\t t_Run = " << t_Run << "\t t_p = " << t_p << "\t t_qltyFlag = " << t_qltyFlag << std::endl;
+    
+    if (t_Event == 818876500 && t_Run == 210614)  std::cout << "t_Event = " << t_Event << "\t t_Run = " << t_Run << "\t t_p = " << t_p << "\t t_qltyFlag = " << t_qltyFlag << std::endl;
+     
+    if (t_Event == 819864004 && t_Run == 210614)  std::cout << "t_Event = " << t_Event << "\t t_Run = " << t_Run << "\t t_p = " << t_p << "\t t_qltyFlag = " << t_qltyFlag << std::endl;
+    
+    if (t_Event == 822092457 && t_Run == 210614)  std::cout << "t_Event = " << t_Event << "\t t_Run = " << t_Run << "\t t_p = " << t_p << "\t t_qltyFlag = " << t_qltyFlag << std::endl;
+    
+    if (t_Event == 622340368 && t_Run == 210498)  std::cout << "t_Event = " << t_Event << "\t t_Run = " << t_Run << "\t t_p = " << t_p << "\t t_qltyFlag = " << t_qltyFlag << std::endl;
+    
+    if (t_Event == 818906484 && t_Run == 210614)  std::cout << "t_Event = " << t_Event << "\t t_Run = " << t_Run << "\t t_p = " << t_p << "\t t_qltyFlag = " << t_qltyFlag << std::endl;
+        
+    if (t_Event == 820046239 && t_Run == 210614)  std::cout << "t_Event = " << t_Event << "\t t_Run = " << t_Run << "\t t_p = " << t_p << "\t t_qltyFlag = " << t_qltyFlag << std::endl;
+    
+    if (t_Event == 822096039 && t_Run == 210614)  std::cout << "t_Event = " << t_Event << "\t t_Run = " << t_Run << "\t t_p = " << t_p << "\t t_qltyFlag = " << t_qltyFlag << std::endl;
+    
+    if (t_Event == 817752408 && t_Run == 210614)  std::cout << "t_Event = " << t_Event << "\t t_Run = " << t_Run << "\t t_p = " << t_p << "\t t_qltyFlag = " << t_qltyFlag << std::endl;
+    
+    if (t_Event == 818981084 && t_Run == 210614)  std::cout << "t_Event = " << t_Event << "\t t_Run = " << t_Run << "\t t_p = " << t_p << "\t t_qltyFlag = " << t_qltyFlag << std::endl;
+*/
+    if ((t_qltyFlag && t_p<40.) || t_p>40. ) {
+    //if (t_qltyFlag) {
       nselTracks++;
       int nRH_eMipDR(0), nNearTRKs(0), nRecHits(-999);
+      std::vector<DetId> ids;
       t_eMipDR = spr::eCone_ecal(geo, barrelRecHitsHandle, 
 				 endcapRecHitsHandle, trkDetItr->pointHCAL,
 				 trkDetItr->pointECAL, a_mipR_, 
 				 trkDetItr->directionECAL, nRH_eMipDR);
-      std::vector<DetId> ids;
-      t_DetIds->clear(); t_HitEnergies->clear();
+      t_DetIds->clear(); t_HitEnergies->clear(); ids.clear();
       t_eHcalDelta = spr::eCone_hcal(geo, hbhe, trkDetItr->pointHCAL, 
 				     trkDetItr->pointECAL, a_charIsoR_, 
 				     trkDetItr->directionHCAL,nRecHits, 
-				     ids, *t_HitEnergies, useRaw_);
-      t_DetIds->clear(); t_HitEnergies->clear();
+				     ids, *t_HitEnergies, *t_Timing, useRaw_); ids.clear();
+      t_DetIds->clear(); t_HitEnergies->clear(); t_Timing->clear();
       t_eHcal       = spr::eCone_hcal(geo, hbhe, trkDetItr->pointHCAL, 
 				      trkDetItr->pointECAL, a_coneR_, 
 				      trkDetItr->directionHCAL,nRecHits, 
-				      ids, *t_HitEnergies, useRaw_);
+				      ids, *t_HitEnergies, *t_Timing, useRaw_);
       t_eHcalDelta -= t_eHcal;
       t_eHcalDelta *= hcalScale_;
       t_eHcal      *= hcalScale_;
       for (unsigned int k=0; k<ids.size(); ++k) {
-	t_DetIds->push_back(ids[k].rawId());
+	    t_DetIds->push_back(ids[k].rawId());
       }
       t_hmaxNearP = spr::chargeIsolationCone(nTracks, trkCaloDirections,
 					     a_charIsoR_, nNearTRKs, false);
@@ -674,8 +703,21 @@ int HcalIsoTrkAnalyzer::fillTree(std::vector< math::XYZTLorentzVector>& vecL1,
 				     << t_HitEnergies->at(lll) ;
       }
 #endif
+//      std::cout << "pTrackMin = " << pTrackMin_ << "\tecalMax = " << eEcalMax_ << "\teIsolation = " << eIsolation_ << std::endl;
+//      
+/*
+      if (t_Event == 817752408 || t_Event == 819864004 || t_Event == 818906484)
+      {
+            std::cout << "t_Event = " << t_Event << "\t t_Run = " << t_Run << "\t t_eMipDR = " << t_eMipDR << "\t t_hmaxNearP = " << t_hmaxNearP << std::endl; 
+            for (unsigned int lll=0;lll<std::min(t_HitEnergies->size(),t_DetIds->size());lll++) 
+            {
+	            std::cout << "det id is = " <<t_DetIds->at(lll)    << "\thit enery is  = "    << t_HitEnergies->at(lll)  << std::endl;
+            }
+      }
+*/
       if (t_p>pTrackMin_ && t_eMipDR<eEcalMax_ && 
 	  t_hmaxNearP<eIsolation_) {
+ //         std::cout << " is filled\n";
 	tree->Fill();
 	nsave++;
 	if (t_p > 40.0 && t_p <= 60.0 && t_selectTk) t_ietaGood->push_back(t_ieta);
