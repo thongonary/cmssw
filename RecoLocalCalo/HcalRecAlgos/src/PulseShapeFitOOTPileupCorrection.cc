@@ -219,7 +219,7 @@ namespace FitterFuncs{
 	    funcHPDShape(pulse_shape_, pars[i+2],pars[i*2+1],psFit_slew[time]);
 	  } 
 	  else {
-	    funcNewShape(pulse_shape_, pars[0],pars[1]);
+	    funcNewShape(pulse_shape_, pars[i+2],pars[i*2+1]);
 	  }
 	  // add an uncertainty from the pulse (currently noise * pulse height =>Ecal uses full cov)
 	 /////
@@ -250,7 +250,7 @@ namespace FitterFuncs{
 	    funcHPDShape(pulse_shape_, pars[i*2],pars[i*2+1],psFit_slew[time]);
 	  }
 	  else {
-	    funcNewShape(pulse_shape_, pars[0],pars[1]);
+	    funcNewShape(pulse_shape_, pars[i+2],pars[i*2+1]);
 	  }
 
 	  // add an uncertainty from the pulse (currently noise * pulse height =>Ecal uses full cov)
