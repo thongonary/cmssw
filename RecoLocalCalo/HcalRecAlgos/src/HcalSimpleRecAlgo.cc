@@ -96,7 +96,7 @@ void HcalSimpleRecAlgo::setForData (int runnumm , bool isBarrel) {
 
 	if(useCsv == true) {
 	  // these are standard pulses
-	  psFitOOTpuCorr_->newSetPulseShapeTemplate("CalibCalorimetry/HcalAlgos/data/pulse_shape_HBHE.csv",isHPD); // this is the NEW things from JAY
+	  psFitOOTpuCorr_->newSetPulseShapeTemplate("CalibCalorimetry/HcalAlgos/data/pulse_shape_HBHE.csv",isHPD); // this is the standard 105
 	} else {
 	  //std::cout << "setting up the old pulse" << std::endl;
 	  psFitOOTpuCorr_->setPulseShapeTemplate(theHcalPulseShapes_.getShape(shapeNum),isHPD);
@@ -109,12 +109,12 @@ void HcalSimpleRecAlgo::setForData (int runnumm , bool isBarrel) {
 	if( runnum_ == 0 ){
 	  // this means MC
 	  if(isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate("CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_MC.csv",isHPD); // this is the LAG, MC
-	  if(!isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate("CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_MC.csv",isHPD); // this is the LAG, MC
+	  if(!isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate("CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_MC_HPD.csv",isHPD); // this is the LAG, MC
 	}
 	if( runnum_ > 0 ){
 	  // this means data
-	  if(isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate("CalibCalorimetry/HcalAlgos/data/pulse_shape_new_HB.csv",isHPD); // this is the LAG, Data
-	  if(!isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate("CalibCalorimetry/HcalAlgos/data/pulse_shape_new_HE.csv",isHPD); // this is the LAG, Data
+	  if(isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate("CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_Dat.csv",isHPD); // this is the LAG, Data
+	  if(!isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate("CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_Dat_HPD.csv",isHPD); // this is the LAG, Data
 	}
 
       }
@@ -507,6 +507,7 @@ namespace HcalSimpleRecAlgoImpl {
 
       if( correctedOutput.size() >1 ){
 	time = correctedOutput[1]; ampl = correctedOutput[0];
+	//	std::cout << " MAHI detID=" << detID << " ampl=" << ampl << std::endl;
       }
 
     }
@@ -522,6 +523,9 @@ namespace HcalSimpleRecAlgoImpl {
 	capidvec.push_back(capid);
       }
       psFitOOTpuCorr->apply(cs, capidvec, calibs, ampl, time, useTriple,chi2);
+      const HcalDetId& detID = digi.id();
+      //      std::cout << " M2 detID=" << detID << " ampl=" << ampl << std::endl;
+
     }
     
     // S. Brandt - Feb 19th : Adding Section for HLT
