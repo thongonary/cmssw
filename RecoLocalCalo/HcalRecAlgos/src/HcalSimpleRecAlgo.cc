@@ -17,13 +17,13 @@ constexpr double MaximumFractionalError = 0.002; // 0.2% error allowed from this
 constexpr int HPDShapev3DataNum = 105;
 constexpr int HPDShapev3MCNum = 105;
 
-constexpr bool useMiaoPulse=true;
-constexpr bool useCsv=true;
+//constexpr bool useMiaoPulse=true;
+//constexpr bool useCsv=true;
 
 HcalSimpleRecAlgo::HcalSimpleRecAlgo(bool correctForTimeslew, bool correctForPulse, float phaseNS) : 
   correctForTimeslew_(correctForTimeslew),
   correctForPulse_(correctForPulse),
-  phaseNS_(phaseNS), runnum_(0), setLeakCorrection_(false), puCorrMethod_(0)
+  phaseNS_(phaseNS), runnum_(0), setLeakCorrection_(false), puCorrMethod_(0), pulseShapeType_(0)
 {  
   pulseCorr_ = std::make_unique<HcalPulseContainmentManager>(MaximumFractionalError);
   pedSubFxn_ = std::make_unique<PedestalSub>();
@@ -92,19 +92,9 @@ void HcalSimpleRecAlgo::setForData (int runnumm , bool isBarrel) {
 
       bool isHPD=true;
 
-      if (useMiaoPulse == false) {
-
-	if(useCsv == true) {
-	  // these are standard pulses
-	  psFitOOTpuCorr_->newSetPulseShapeTemplate("CalibCalorimetry/HcalAlgos/data/pulse_shape_HBHE.csv",isHPD); // this is the standard 105
-	} else {
-	  //std::cout << "setting up the old pulse" << std::endl;
-	  psFitOOTpuCorr_->setPulseShapeTemplate(theHcalPulseShapes_.getShape(shapeNum),isHPD);
-	}
-
-      }
-      else {
-
+      if(pulseShapeType_==1) psFitOOTpuCorr_->setPulseShapeTemplate(theHcalPulseShapes_.getShape(shapeNum),isHPD); // this is the standard 105
+      if(pulseShapeType_==2) psFitOOTpuCorr_->newSetPulseShapeTemplate("CalibCalorimetry/HcalAlgos/data/pulse_shape_HBHE.csv",isHPD); // this is the CSV 105
+      if(pulseShapeType_==3) {
 	//	std::cout << "setting up the new pulse" << std::endl;
 	if( runnum_ == 0 ){
 	  // this means MC
@@ -117,22 +107,26 @@ void HcalSimpleRecAlgo::setForData (int runnumm , bool isBarrel) {
 	  if(!isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate("CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_Dat_HPD.csv",isHPD); // this is the LAG, Data
 	}
 
-      }
+      } // end pulse shape 2
 
    }
    else if ( puCorrMethod_ == 10) {
 
-     if (useCsv == true) {
+     if(pulseShapeType_==2) {
+
+       psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true, "CalibCalorimetry/HcalAlgos/data/pulse_shape_HBHE.csv"); // this is the CSV 105
+
+     } else if(pulseShapeType_==3) {
        if ( runnum_ == 0) {
-	 if (isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(useCsv, "CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_MC.csv");
-	 if (!isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(useCsv, "CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_MC_HPD.csv");
+	 if (isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true, "CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_MC.csv"); // this is the LAG, MC
+	 if (!isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true, "CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_MC_HPD.csv"); // this is the LAG, MC
        }
        if ( runnum_ >0 ) {
-	 if (isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(useCsv, "CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_Dat.csv");
-	 if (!isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(useCsv, "CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_Dat_HPD.csv");
+	 if (isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true, "CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_Dat.csv"); // this is the LAG, Data
+	 if (!isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true, "CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_Dat_HPD.csv"); // this is the LAG, Data
        }
-
      }
+
    }
 }
 

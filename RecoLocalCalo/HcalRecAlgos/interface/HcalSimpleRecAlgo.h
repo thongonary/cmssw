@@ -113,6 +113,7 @@ private:
   HcalPulseShapes theHcalPulseShapes_;
 
   int puCorrMethod_;
+  int pulseShapeType_;
 
   std::unique_ptr<PulseShapeFitOOTPileupCorrection> psFitOOTpuCorr_;
   
