@@ -1,5 +1,5 @@
-#ifndef HcalTesting_Mahi_DoMahiAlgo_HH
-#define HcalTesting_Mahi_DoMahiAlgo_HH
+#ifndef RecoLocalCalo_HcalRecAlgos_DoMahiAlgo_HH
+#define RecoLocalCalo_HcalRecAlgos_DoMahiAlgo_HH
 
 #include "DataFormats/HcalDetId/interface/HcalSubdetector.h"
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
