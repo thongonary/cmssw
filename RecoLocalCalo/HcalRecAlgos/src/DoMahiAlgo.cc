@@ -1,7 +1,67 @@
 #include "RecoLocalCalo/HcalRecAlgos/interface/DoMahiAlgo.h"
 #include <iostream>
+#include <fstream> 
 
 void eigen_solve_submatrix(PulseMatrix& mat, PulseVector& invec, PulseVector& outvec, unsigned NP);
+
+void DoMahiAlgo::setPulseShapeTemplate(bool useCSV, std::string filename="") {
+  _useCSV = useCSV;
+
+  if (_useCSV && filename!="") {
+    std::ifstream ifs;
+    ifs.open(filename.c_str());
+    assert(ifs.is_open());
+    std::string line;
+
+    int i = 0;
+    while(getline(ifs,line)) {
+      if(line[0]=='#') continue;
+      
+      std::string tmpStr;
+      std::stringstream ss(line);
+      ss >> tmpStr; 
+      minCharge_[i] = std::atoi(tmpStr.c_str());
+      ss >> tmpStr;
+      maxCharge_[i] = std::atoi(tmpStr.c_str());
+      for (int k=0; k<10; k++) { ss >> tmpStr; pulseFrac_[i][k] = std::atof(tmpStr.c_str()); }
+      for (int k=0; k<10; k++) { ss >> tmpStr; pulseFracDeriv_[i][k] = std::atof(tmpStr.c_str()); }
+
+      i++;
+
+    }
+  }
+
+}
+
+void DoMahiAlgo::getPulseShape(float q, HcalDetId detID, float t, SampleVector &pulseShape, float sigma=0) {
+
+  if (!_useCSV) {
+    pulseShapeObj.computeLAGShape(q, detID, t, pulseShape, sigma);
+  }
+  else {
+    int chargeBin = -1;
+    for (int i=0; i<58; i++) {
+      if (q>minCharge_[i] && q<maxCharge_[i]) chargeBin=i;
+    }
+    if (q>maxCharge_[57]) chargeBin=57; 
+    if (chargeBin==-1) chargeBin=0;
+    
+    int dt= (t/25);
+    for (int i=0; i<10; i++) {
+      if (i-dt<0 ||i-dt>9) pulseShape.coeffRef(i-dt) = 0;
+      else {
+	if (pulseFrac_[chargeBin][i] > 1e-6) {
+	  pulseShape.coeffRef(i-dt) = pulseFrac_[chargeBin][i-dt] + (t-dt*25)*pulseFracDeriv_[chargeBin][i-dt];
+	}
+	else {
+	  pulseShape.coeffRef(i-dt)=0;
+	}
+      }
+    }
+  }
+
+}
+
 
 void DoMahiAlgo::Apply(const CaloSamples & cs, const std::vector<int> & capidvec, const HcalDetId & detID, const HcalCalibrations & calibs, std::vector<double> & correctedOutput) {
 
@@ -29,7 +89,6 @@ void DoMahiAlgo::Apply(const CaloSamples & cs, const std::vector<int> & capidvec
 
   std::vector<double> fitParsVec;
 
-  //  _detID = HcalDetId(detID);
   _detID = detID;
 
   bool status =false;
@@ -49,7 +108,7 @@ void DoMahiAlgo::Apply(const CaloSamples & cs, const std::vector<int> & capidvec
 
 }  
 
-bool DoMahiAlgo::DoFit(SampleVector amplitudes, SampleVector gains, std::vector<double> &correctedOutput){
+bool DoMahiAlgo::DoFit(SampleVector amplitudes, SampleVector gains, std::vector<double> &correctedOutput) {
 
   _nP = 0;
   //ECAL does it better -- to be fixed
@@ -99,35 +158,35 @@ bool DoMahiAlgo::DoFit(SampleVector amplitudes, SampleVector gains, std::vector<
 
   bool foundintime = false;
   unsigned int ipulseintime = 0;
-  //unsigned int ipulseprevtime = 0;
-  //unsigned int ipulsenexttime = 0;
+  unsigned int ipulseprevtime = 0;
+  unsigned int ipulsenexttime = 0;
 
   for (unsigned int ipulse=0; ipulse<_nPulseTot; ++ipulse) {
     if (_bxs.coeff(ipulse)==0) {
       ipulseintime = ipulse;
       foundintime = true;
     }
-    /*else if (_bxs.coeff(ipulse)==-1) {
+    else if (_bxs.coeff(ipulse)==-1) {
       ipulseprevtime = ipulse;
     }
     else if (_bxs.coeff(ipulse)==1) {
       ipulsenexttime = ipulse;
-      }*/
+    }
   }
   if (!foundintime) return status;
-  /*
-  std::cout << "------" << std::endl;
-  std::cout << "input: " ;
-  for (int i=0; i<10; i++) {
-    std::cout << _amplitudes.coeff(i) << ", ";
-  }
-  std::cout << std::endl;
 
-  std::vector<double> ans;
+  //std::cout << "------" << std::endl;
+  //std::cout << "input: " ;
+  //for (int i=0; i<10; i++) {
+  //std::cout << _amplitudes.coeff(i) << ", ";
+  //}
+  //std::cout << std::endl;
 
-  std::cout << "output: ";// << std::endl;
-  std::cout << _ampVec.coeff(ipulseprevtime) << ", " << _ampVec.coeff(ipulseintime) << ", " << _ampVec.coeff(ipulsenexttime) << std::endl;
-  //std::cout << "output we care about: ";
+  //std::vector<double> ans;
+
+  //std::cout << "output: ";// << std::endl;
+  //std::cout << _ampVec.coeff(ipulseprevtime) << ", " << _ampVec.coeff(ipulseintime) << ", " << _ampVec.coeff(ipulsenexttime) << std::endl;
+  /*std::cout << "output we care about: ";
 
   pulseShapeObj.computeLAGShape(_ampVec.coeff(ipulseprevtime), _detID, -25, pulseShape,0);
   for (int i=0; i<10; i++) {
@@ -153,13 +212,13 @@ bool DoMahiAlgo::DoFit(SampleVector amplitudes, SampleVector gains, std::vector<
     std::cout << ans[i] << ", ";
   }
   std::cout << std::endl;
-
-  std::cout << "chi2: " ;
-  std::cout << _chiSq << std::endl;
-  std::cout << "-----------" << std::endl;
+  */
+  //std::cout << "chi2: " ;
+  //std::cout << _chiSq << std::endl;
+  //std::cout << "-----------" << std::endl;
 
   //const unsigned int ipulseintimemin = ipulseintime;
-
+  /*
   return _ampVec.coeff(ipulseintime);
 
   //return true;
@@ -170,8 +229,10 @@ bool DoMahiAlgo::DoFit(SampleVector amplitudes, SampleVector gains, std::vector<
   correctedOutput.clear();
   //  correctedOutput.push_back(_ampVec.coeff(ipulseintime)); //charge
   correctedOutput.push_back(_ampVec.coeff(ipulseintime)*gain); //energy
-  correctedOutput.push_back(-999); //time
-  correctedOutput.push_back(-999); //pedestal
+  correctedOutput.push_back(_ampVec.coeff(ipulsenexttime)*gain); //energy TEMPORARY
+  correctedOutput.push_back(_ampVec.coeff(ipulseprevtime)*gain); //energy TEMPORARY
+  //correctedOutput.push_back(-999); //time
+  ///correctedOutput.push_back(-999); //pedestal
   correctedOutput.push_back(_chiSq); //chi2
 
   return true;
@@ -181,12 +242,12 @@ bool DoMahiAlgo::DoFit(SampleVector amplitudes, SampleVector gains, std::vector<
 bool DoMahiAlgo::Minimize() {
   //std::cout << "start minimize" << std::endl;
   int iter = 0;
-  int maxIters = 100;
+  int maxIters = 500;
   bool status = false;
 
   while (true) {
     if (iter>=maxIters) {
-      std::cout << "max number of iterations reached!" << std::endl;
+      std::cout << "max number of iterations reached! " << std::endl;
       //std::cout << _chiSq << std::endl;
       break;
     }
@@ -221,15 +282,9 @@ bool DoMahiAlgo::NNLS() {
 
   //std::cout << _ampVec << std::endl;
   for (uint i=0; i<npulse; i++) {
-    //if (_ampVec.coeff(i)==0) {
-    //_pulseMat.col(i) = zeroShape.segment<10>(0);
-    //}
-    //else {
     double nomT = _bxs.coeff(i)*25;
-    pulseShapeObj.computeLAGShape(_ampVec.coeff(i), _detID, nomT, pulseShape,0);
-    //std::cout << "is the pulse fucked? " << nomT << ", " << pulseShape.coeff(3) << ", " << pulseShape.coeff(4) << ", " << pulseShape.coeff(5) << std::endl;
+    getPulseShape(_ampVec.coeff(i), _detID, nomT, pulseShape,0);
     _pulseMat.col(i) = pulseShape.segment<10>(0);
-    //}
   }
 
   //std::cout << "new pulsemat" << std::endl;
@@ -256,7 +311,6 @@ bool DoMahiAlgo::NNLS() {
       wmax = updateWork.tail(nActive).maxCoeff(&idxwmax);
 
       if (wmax<threshold || (idxwmax==idxwmaxprev && wmax==wmaxprev)) {
-	//std::cout << "idek man" << std::endl;
 	break;
       }
       
@@ -332,7 +386,7 @@ bool DoMahiAlgo::NNLS() {
     
     //adaptive convergence threshold to avoid infinite loops but still
     //ensure best value is used
-    if (iter%50==0) {
+    if (iter%10==0) {
       threshold *= 10.;
     }
 
@@ -363,14 +417,17 @@ bool DoMahiAlgo::UpdateCov() {
     
     double nomT = _bxs.coeff(k)*25;
     int maxTS = 4+_bxs.coeff(k);
-    pulseShapeObj.computeLAGShape(ifC, _detID, nomT, pulseShape,0);
-    pulseShapeObj.computeLAGShape(ifC, _detID, nomT+deltaT, pulseShapeP,0);
-    pulseShapeObj.computeLAGShape(ifC, _detID, nomT-deltaT, pulseShapeM,0);
+
+    getPulseShape(ifC, _detID, nomT, pulseShape,0); 
+    getPulseShape(ifC, _detID, nomT+deltaT, pulseShapeP,0);  
+    getPulseShape(ifC, _detID, nomT-deltaT, pulseShapeM,0);
+
     for (int xx=0; xx<10; xx++) {
       pulseShape.coeffRef(xx) = pulseShape.coeff(xx)/pulseShape.coeff(maxTS);
       pulseShapeP.coeffRef(xx) = pulseShapeP.coeff(xx)/pulseShapeP.coeff(maxTS);
       pulseShapeM.coeffRef(xx) = pulseShapeM.coeff(xx)/pulseShapeM.coeff(maxTS);
     }
+
     //if (nomT!=0) std::cout << _invCovMat << std::endl << "---" << std::endl;
     for (int i=0; i<10; i++) {
       for (int j=0; j<i+1; j++) {

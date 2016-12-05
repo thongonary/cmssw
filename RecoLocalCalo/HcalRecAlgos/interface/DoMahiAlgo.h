@@ -29,8 +29,10 @@ class DoMahiAlgo
 
   // FIXME: need to convert the correctedOutput to memory free
   void Apply(const CaloSamples & cs, const std::vector<int> & capidvec, const HcalDetId & detID, const HcalCalibrations & calibs, std::vector<double> & correctedOutput);
-
+  
   bool DoFit(SampleVector amplitudes, SampleVector gains, std::vector<double> &correctedOutput);
+
+  void setPulseShapeTemplate(bool useCSV, std::string filename);
 
  private:
   
@@ -38,6 +40,8 @@ class DoMahiAlgo
   bool UpdateCov();
   double CalculateChiSq();
   bool NNLS();
+
+  void getPulseShape(float q, HcalDetId detID, float t, SampleVector &pulseShape, float sigma);
 
   SampleVector _amplitudes;
   SampleMatrix _invCovMat;
@@ -62,6 +66,13 @@ class DoMahiAlgo
   BXVector _bxsMin;
   unsigned int _nPulseTot;
   unsigned int _nP;
+
+  bool _useCSV;
+
+  float minCharge_[58];
+  float maxCharge_[58];
+  float pulseFrac_[58][10];
+  float pulseFracDeriv_[58][10];
 
   double _chiSq;
 

@@ -23,6 +23,7 @@
 
 #include "RecoLocalCalo/HcalRecAlgos/interface/PulseShapeFitOOTPileupCorrection.h"
 #include "RecoLocalCalo/HcalRecAlgos/interface/HcalDeterministicFit.h"
+#include "RecoLocalCalo/HcalRecAlgos/interface/DoMahiAlgo.h"
 
 #include "RecoLocalCalo/HcalRecAlgos/interface/PedestalSub.h"
 
@@ -82,6 +83,8 @@ public:
     puCorrMethod_ = method;
     if( puCorrMethod_ == 2 )
         psFitOOTpuCorr_ = std::make_unique<PulseShapeFitOOTPileupCorrection>();
+    else if ( puCorrMethod_ == 10 )
+      psFitMAHIOOTpuCorr_ = std::make_unique<DoMahiAlgo>();
   }
 
   void setpuCorrParams(bool   iPedestalConstraint, bool iTimeConstraint,bool iAddPulseJitter,bool iApplyTimeSlew,
@@ -117,6 +120,8 @@ private:
 
   // S.Brandt Feb19 : Add a pointer to the HLT algo
   std::unique_ptr<HcalDeterministicFit> hltOOTpuCorr_;
+
+  std::unique_ptr<DoMahiAlgo> psFitMAHIOOTpuCorr_;
 };
 
 #endif
