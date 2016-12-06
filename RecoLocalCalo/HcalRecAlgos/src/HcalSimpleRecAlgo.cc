@@ -23,7 +23,7 @@ constexpr int HPDShapev3MCNum = 105;
 HcalSimpleRecAlgo::HcalSimpleRecAlgo(bool correctForTimeslew, bool correctForPulse, float phaseNS) : 
   correctForTimeslew_(correctForTimeslew),
   correctForPulse_(correctForPulse),
-  phaseNS_(phaseNS), runnum_(0), setLeakCorrection_(false), puCorrMethod_(0), pulseShapeType_(0)
+  phaseNS_(phaseNS), runnum_(0), setLeakCorrection_(false), puCorrMethod_(0)
 {  
   pulseCorr_ = std::make_unique<HcalPulseContainmentManager>(MaximumFractionalError);
   pedSubFxn_ = std::make_unique<PedestalSub>();
@@ -95,7 +95,7 @@ void HcalSimpleRecAlgo::setForData (int runnumm , bool isBarrel) {
       if(pulseShapeType_==1) psFitOOTpuCorr_->setPulseShapeTemplate(theHcalPulseShapes_.getShape(shapeNum),isHPD); // this is the standard 105
       if(pulseShapeType_==2) psFitOOTpuCorr_->newSetPulseShapeTemplate("CalibCalorimetry/HcalAlgos/data/pulse_shape_HBHE.csv",isHPD); // this is the CSV 105
       if(pulseShapeType_==3) {
-	//	std::cout << "setting up the new pulse" << std::endl;
+	//	std::cout << "setting up the new pulse type=" << pulseShapeType_ << std::endl;
 	if( runnum_ == 0 ){
 	  // this means MC
 	  if(isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate("CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_MC.csv",isHPD); // this is the LAG, MC

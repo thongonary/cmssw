@@ -87,6 +87,10 @@ public:
       psFitMAHIOOTpuCorr_ = std::make_unique<DoMahiAlgo>();
   }
 
+  void setPulseShape(int shape){
+    pulseShapeType_ = shape;
+  }
+
   void setpuCorrParams(bool   iPedestalConstraint, bool iTimeConstraint,bool iAddPulseJitter,bool iApplyTimeSlew,
 		       double iTS4Min, std::vector<double> iTS4Max, double iPulseJitter,
 		       double iTimeMean,double iTimeSig,double iTimeSigSiPM,
