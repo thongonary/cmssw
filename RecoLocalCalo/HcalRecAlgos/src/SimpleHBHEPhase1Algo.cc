@@ -88,7 +88,7 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
       if(pulseShapeType_==1) psFitOOTpuCorr_->setPulseShapeTemplate(theHcalPulseShapes_.getShape(info.recoShape()),!info.hasTimeInfo()); // this is the standard 105
       if(pulseShapeType_==2) {
 	if(!info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HBHE.csv").c_str(),!info.hasTimeInfo()); // this is the CSV 105
-	if(info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HBHE_203.csv").c_str(),!info.hasTimeInfo()); // here need the 203 just a placeholde now
+	if(info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_SIPM.csv").c_str(),!info.hasTimeInfo()); // here need CSV 203
       }
 
       if(pulseShapeType_==3) {
