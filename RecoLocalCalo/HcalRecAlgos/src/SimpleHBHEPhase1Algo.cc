@@ -62,6 +62,23 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
     const HcalDetId channelId(info.id());
     char *cmssw = getenv("CMSSW_BASE");
 
+    const unsigned cssize = info.nSamples();
+    double tsTOTen = 0;
+    for(unsigned int ip=0; ip<cssize; ++ip){
+      if( ip >= (unsigned) 10 ) continue;
+
+      double charge = info.tsRawCharge(ip);
+      double ped = info.tsPedestal(ip);
+      double gain = info.tsGain(ip);
+
+      double energy = charge*gain;
+      double peden = ped*gain;
+
+      tsTOTen += energy - peden;
+
+    }
+
+
     // Calculate "Method 0" quantities
     float m0t = 0.f, m0E = 0.f;
     {
@@ -77,6 +94,8 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
         m0t = m0Time(info, fc_ampl, calibs, nSamplesToAdd);
     }
 
+    if(tsTOTen>20 && (!info.hasTimeInfo())) std::cout << " ============================================================" << std::endl;
+
     // Run "Method 2"
     float m2t = 0.f, m2E = 0.f, chi2 = -1.f;
     bool useTriple = false;
@@ -87,15 +106,19 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
       // for now run only on the barrel
       if(!info.hasTimeInfo()) {
 
-	if(pulseShapeType_==1) psFitOOTpuCorr_->setPulseShapeTemplate(theHcalPulseShapes_.getShape(info.recoShape()),!info.hasTimeInfo()); // this is the standard 105
+	if(pulseShapeType_==1) {
+	  if(tsTOTen>20) std::cout << "METHOD2 = setting up the default shape=" << pulseShapeType_ << std::endl;
+	  psFitOOTpuCorr_->setPulseShapeTemplate(theHcalPulseShapes_.getShape(info.recoShape()),!info.hasTimeInfo()); // this is the standard 105
+	}
+
 	if(pulseShapeType_==2) {
+	  if(tsTOTen>20) std::cout << "METHOD2 = setting up the CSV=" << pulseShapeType_ << std::endl;
 	  if(!info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HBHE.csv").c_str(),!info.hasTimeInfo()); // this is the CSV 105
 	  if(info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_SIPM.csv").c_str(),!info.hasTimeInfo()); // here need CSV 203
 	}
 	
 	if(pulseShapeType_==3) {
-	  
-	  //std::cout << "setting up the new pulse type=" << pulseShapeType_ << std::endl;
+	  if(tsTOTen>20) std::cout << "METHOD2 = setting up the LAG pulse type=" << pulseShapeType_ << std::endl;
 	  if(!isData ){
 	    // this means MC
 	    if(!info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_MC.csv").c_str(),!info.hasTimeInfo()); // this is the LAG, MC
@@ -135,7 +158,8 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
     {
 
       if(!info.hasTimeInfo()) {
-	//std::cout << "setting up the new pulse type=" << pulseShapeType_ << std::endl;
+	if(tsTOTen>20) std::cout << "MAHI = setting up the LAG pulse type=" << pulseShapeType_ << std::endl;
+
 	if(!isData ){
 	  // this means MC
 	  if(!info.hasTimeInfo()) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true,((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_MC.csv").c_str()); // this is the LAG, MC
