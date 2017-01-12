@@ -108,6 +108,56 @@ void DoMahiAlgo::Apply(const CaloSamples & cs, const std::vector<int> & capidvec
 
 }  
 
+void DoMahiAlgo::phase1Apply(const HBHEChannelInfo& channelData,
+			     float& reconstructedEnergy,
+			     //			     float& chi2) const {
+			     float& chi2) {
+
+  const unsigned cssize = channelData.nSamples();
+
+  SampleVector charges;
+  SampleVector gains;
+
+  double tsTOT = 0, tstrig = 0; // in fC
+  for(unsigned int ip=0; ip<cssize; ++ip){
+    if( ip >= (unsigned)10) continue; // Too many samples than what we wanna fit (10 is enough...) -> skip them
+    //    const int capid = capidvec[ip];
+    double charge = channelData.tsRawCharge(ip);
+    double ped = channelData.tsPedestal(ip);
+    double gain = channelData.tsGain(ip);
+
+    charges.coeffRef(ip) = charge - ped;
+    gains.coeffRef(ip) = gain;
+
+    tsTOT += charge - ped;
+    if( ip ==4 || ip==5 ){
+      tstrig += charge - ped;
+    }
+  }
+
+  std::vector<double> fitParsVec;
+
+  _detID = channelData.id();
+
+  bool status =false;
+  if(tstrig >= 0) {
+    status = DoFit(charges, gains, fitParsVec); //
+  }
+
+  if (!status) {
+    fitParsVec.clear();
+    fitParsVec.push_back(0.);
+    fitParsVec.push_back(0.);
+    fitParsVec.push_back(0.);
+    fitParsVec.push_back(999.);
+  }
+
+  reconstructedEnergy = fitParsVec[0];
+  chi2 = fitParsVec[3];
+
+}
+
+
 bool DoMahiAlgo::DoFit(SampleVector amplitudes, SampleVector gains, std::vector<double> &correctedOutput) {
 
   _nP = 0;

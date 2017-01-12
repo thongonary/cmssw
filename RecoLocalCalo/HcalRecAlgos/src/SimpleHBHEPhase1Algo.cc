@@ -60,6 +60,7 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
     HBHERecHit rh;
 
     const HcalDetId channelId(info.id());
+    char *cmssw = getenv("CMSSW_BASE");
 
     // Calculate "Method 0" quantities
     float m0t = 0.f, m0E = 0.f;
@@ -83,33 +84,35 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
     if (method2)
     {
 
-      char *cmssw = getenv("CMSSW_BASE");
+      // for now run only on the barrel
+      if(!info.hasTimeInfo()) {
 
-      if(pulseShapeType_==1) psFitOOTpuCorr_->setPulseShapeTemplate(theHcalPulseShapes_.getShape(info.recoShape()),!info.hasTimeInfo()); // this is the standard 105
-      if(pulseShapeType_==2) {
-	if(!info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HBHE.csv").c_str(),!info.hasTimeInfo()); // this is the CSV 105
-	if(info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_SIPM.csv").c_str(),!info.hasTimeInfo()); // here need CSV 203
-      }
-
-      if(pulseShapeType_==3) {
-
-	//std::cout << "setting up the new pulse type=" << pulseShapeType_ << std::endl;
-	if(!isData ){
-	  // this means MC
-	  if(!info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_MC.csv").c_str(),!info.hasTimeInfo()); // this is the LAG, MC
-	  if(info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_MC_HPD.csv").c_str(),!info.hasTimeInfo()); // this is the LAG, MC
+	if(pulseShapeType_==1) psFitOOTpuCorr_->setPulseShapeTemplate(theHcalPulseShapes_.getShape(info.recoShape()),!info.hasTimeInfo()); // this is the standard 105
+	if(pulseShapeType_==2) {
+	  if(!info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HBHE.csv").c_str(),!info.hasTimeInfo()); // this is the CSV 105
+	  if(info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_SIPM.csv").c_str(),!info.hasTimeInfo()); // here need CSV 203
 	}
-	if(isData){
-	  // this means data
-	  if(!info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_Dat.csv").c_str(),!info.hasTimeInfo()); // this is the LAG, Data
-	  if(info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_Dat_HPD.csv").c_str(),!info.hasTimeInfo()); // this is the LAG, Data
+	
+	if(pulseShapeType_==3) {
+	  
+	  //std::cout << "setting up the new pulse type=" << pulseShapeType_ << std::endl;
+	  if(!isData ){
+	    // this means MC
+	    if(!info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_MC.csv").c_str(),!info.hasTimeInfo()); // this is the LAG, MC
+	    if(info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_MC_HPD.csv").c_str(),!info.hasTimeInfo()); // this is the LAG, MC // this is a placeholder
+	  }
+	  if(isData){
+	    // this means data
+	    if(!info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_Dat.csv").c_str(),!info.hasTimeInfo()); // this is the LAG, Data
+	    if(info.hasTimeInfo()) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_Dat_HPD.csv").c_str(),!info.hasTimeInfo()); // this is the LAG, Data // this is a placeholder
+	  }
 	}
-      }
 
         // "phase1Apply" call below sets m2E, m2t, useTriple, and chi2.
         // These parameters are pased by non-const reference.
         method2->phase1Apply(info, m2E, m2t, useTriple, chi2);
         m2E *= hbminusCorrectionFactor(channelId, m2E, isData);
+      }
     }
 
     // Run "Method 3"
@@ -121,21 +124,32 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
         method3->phase1Apply(info, m3E, m3t);
         m3E *= hbminusCorrectionFactor(channelId, m3E, isData);
     }
-    /*
+
     // Run "Mahi"
-    float m10t = 0.f, m10E = 0.f, chi2_mahi = -1.f;
-    bool useTriple_mahi = false;
-    const DoMahiAlgo* mahi = psFitMAHIOOTpuCorr_.get();
+    /*float m10t = 0.f, */
+    float m10E = 0.f, chi2_mahi = -1.f;
+    //    bool useTriple_mahi = false;
+    //    const DoMahiAlgo* mahi = psFitMAHIOOTpuCorr_.get();
+    DoMahiAlgo* mahi = psFitMAHIOOTpuCorr_.get();
     if (mahi)
     {
-        mahi->setPulseShapeTemplate(theHcalPulseShapes_.getShape(info.recoShape()),
-                                               !info.hasTimeInfo());
-        // "phase1Apply" call below sets m2E, m2t, useTriple, and chi2.
-        // These parameters are pased by non-const reference.
-        mahi->phase1Apply(info, m10E, m10t, useTriple_mahi, chi2_mahi);
-        m10E *= hbminusCorrectionFactor(channelId, m10E, isData);
+
+      if(!info.hasTimeInfo()) {
+	//std::cout << "setting up the new pulse type=" << pulseShapeType_ << std::endl;
+	if(!isData ){
+	  // this means MC
+	  if(!info.hasTimeInfo()) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true,((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_MC.csv").c_str()); // this is the LAG, MC
+	  if(info.hasTimeInfo()) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true,((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_MC_HPD.csv").c_str()); // this is the LAG, MC // this is a placeholder
+	}
+	if(isData){
+	  // this means data
+	  if(!info.hasTimeInfo()) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true,((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_Dat.csv").c_str()); // this is the LAG, Data
+	  if(info.hasTimeInfo()) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true,((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_Dat_HPD.csv").c_str()); // this is the LAG, Data // this is a placeholder
+	}
+	mahi->phase1Apply(info,m10E,chi2_mahi);
+	m10E *= hbminusCorrectionFactor(channelId, m10E, isData);
+      }
     }
-    */
 
     // Finally, construct the rechit
     float rhE = m0E;

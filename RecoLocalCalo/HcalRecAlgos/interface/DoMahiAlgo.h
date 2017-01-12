@@ -7,6 +7,7 @@
 #include "CalibFormats/HcalObjects/interface/HcalCoder.h"
 #include "RecoLocalCalo/HcalRecAlgos/interface/EigenMatrixTypes.h"
 #include "RecoLocalCalo/HcalRecAlgos/interface/PulseShapes.h"
+#include "DataFormats/HcalRecHit/interface/HBHEChannelInfo.h"
 
 /*namespace HcalConst{
 
@@ -27,8 +28,14 @@ class DoMahiAlgo
   DoMahiAlgo();
   ~DoMahiAlgo() { };
 
+  HcalDetId getId(HBHEChannelInfo channelData) const {
+    return channelData.id();
+  }
+
   // FIXME: need to convert the correctedOutput to memory free
   void Apply(const CaloSamples & cs, const std::vector<int> & capidvec, const HcalDetId & detID, const HcalCalibrations & calibs, std::vector<double> & correctedOutput);
+  //  void phase1Apply(const HBHEChannelInfo& channelData, float& reconstructedEnergy, float& chi2) const;
+  void phase1Apply(const HBHEChannelInfo& channelData, float& reconstructedEnergy, float& chi2);
   
   bool DoFit(SampleVector amplitudes, SampleVector gains, std::vector<double> &correctedOutput);
 
