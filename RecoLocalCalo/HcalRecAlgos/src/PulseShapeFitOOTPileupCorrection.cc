@@ -736,13 +736,13 @@ void PulseShapeFitOOTPileupCorrection::phase1Apply(const HBHEChannelInfo& channe
   std::vector<float> correctedOutput;
   correctedOutput.swap(fitParsVec);
 
-  if(tsTOTen>20) std::cout << " --> ID=" << channelData.id() << " depth=" << channelData.id().depth() << " eta=" << channelData.id().ieta() << " phi=" << channelData.id().iphi() << std::endl;
+  if(tsTOTen>20) std::cout << " --> (iEta, iPhi, Depth) = " << channelData.id() << "\n" << "TS        FittedPulse (GeV)        Digi (GeV)" << std::endl;
 
   for(unsigned int ip=0; ip<cssize; ++ip){
     if( ip >= (unsigned) HcalConst::maxSamples ) continue; // Too many samples than what we wanna fit (10 is enough...) -> skip them
 
     //      double chi2TS=(digi_temp[ip]-pulse_temp[ip])*(digi_temp[ip]-pulse_temp[ip])/(noise_temp[ip]*noise_temp[ip]);
-    if(tsTOTen>20) std::cout << "TS=" << ip << " == fittedPulsep[ip](GeV)=" << pulse_temp[ip] << " digi[ip](GeV)=" << digi_temp[ip] << std::endl;
+    if(tsTOTen>20) std::cout << ip << "         " << pulse_temp[ip] << "                " << digi_temp[ip] << std::endl;
 
     /*
 	if(tsTOTen>20) std::cout << "TS=" << ip << " == fittedPulsep[ip](GeV)=" << pulse_temp[ip] << " digi[ip](GeV)=" << digi_temp[ip] <<
