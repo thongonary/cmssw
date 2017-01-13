@@ -188,6 +188,12 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
         rhE = m3E;
         rht = m3t;
     }
+
+    else if (mahi)
+    {
+        rhE = m10E;
+    }
+
     float tdcTime = info.soiRiseTime();
     if (!HcalSpecialTimes::isSpecial(tdcTime))
         tdcTime += timeShift_;
