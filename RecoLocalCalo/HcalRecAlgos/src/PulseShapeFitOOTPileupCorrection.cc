@@ -8,6 +8,7 @@
 double pulse_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
 double digi_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
 double noise_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
+bool doPrint=false;
 
 namespace FitterFuncs{
 
@@ -100,7 +101,7 @@ namespace FitterFuncs{
 
     }
 
-    std::cout << "found templates for " << minCharge_[0] << " < Q < " << maxCharge_[57] << std::endl;
+    if(doPrint) std::cout << "found templates for " << minCharge_[0] << " < Q < " << maxCharge_[57] << std::endl;
 
     for(int i = 0; i < HcalConst::maxSamples; i++) { 
       psFit_x[i]      = 0;
@@ -736,13 +737,13 @@ void PulseShapeFitOOTPileupCorrection::phase1Apply(const HBHEChannelInfo& channe
   std::vector<float> correctedOutput;
   correctedOutput.swap(fitParsVec);
 
-  if(tsTOTen>20) std::cout << " --> (iEta, iPhi, Depth) = " << channelData.id() << "\n" << "TS        FittedPulse (GeV)        Digi (GeV)" << std::endl;
+  if(doPrint && tsTOTen>20) std::cout << " --> (iEta, iPhi, Depth) = " << channelData.id() << "\n" << "TS        FittedPulse (GeV)        Digi (GeV)" << std::endl;
 
   for(unsigned int ip=0; ip<cssize; ++ip){
     if( ip >= (unsigned) HcalConst::maxSamples ) continue; // Too many samples than what we wanna fit (10 is enough...) -> skip them
 
     //      double chi2TS=(digi_temp[ip]-pulse_temp[ip])*(digi_temp[ip]-pulse_temp[ip])/(noise_temp[ip]*noise_temp[ip]);
-    if(tsTOTen>20) std::cout << ip << "         " << pulse_temp[ip] << "                " << digi_temp[ip] << std::endl;
+    if(doPrint && tsTOTen>20) std::cout << ip << "         " << pulse_temp[ip] << "                " << digi_temp[ip] << std::endl;
 
     /*
 	if(tsTOTen>20) std::cout << "TS=" << ip << " == fittedPulsep[ip](GeV)=" << pulse_temp[ip] << " digi[ip](GeV)=" << digi_temp[ip] <<

@@ -2,6 +2,10 @@
 #include <iostream>
 #include <fstream> 
 
+//double pulse_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
+//double digi_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
+//double noise_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
+
 void eigen_solve_submatrix(PulseMatrix& mat, PulseVector& invec, PulseVector& outvec, unsigned NP);
 
 void DoMahiAlgo::setPulseShapeTemplate(bool useCSV, std::string filename="") {
@@ -154,6 +158,18 @@ void DoMahiAlgo::phase1Apply(const HBHEChannelInfo& channelData,
 
   reconstructedEnergy = fitParsVec[0];
   chi2 = fitParsVec[3];
+
+  /*
+  if(tsTOTen>20) std::cout << " --> ID=" << channelData.id() << " depth=" << channelData.id().depth() << " eta=" << channelData.id().ieta() << " phi=" << channelData.id().iphi() << std::endl;
+
+  for(unsigned int ip=0; ip<cssize; ++ip){
+    if( ip >= (unsigned) HcalConst::maxSamples ) continue; // Too many samples than what we wanna fit (10 is enough...) -> skip them                                                                                                   
+    //      double chi2TS=(digi_temp[ip]-pulse_temp[ip])*(digi_temp[ip]-pulse_temp[ip])/(noise_temp[ip]*noise_temp[ip]);                                                                                                               
+    //    if(tsTOTen>20) std::cout << "TS=" << ip << " == fittedPulsep[ip](GeV)=" << pulse_temp[ip] << " digi[ip](GeV)=" << digi_temp[ip] << std::endl;
+
+  }
+  */
+
 
 }
 

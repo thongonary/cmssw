@@ -3,6 +3,7 @@
 
 #include <typeinfo>
 #include <vector>
+#include <assert.h>
 
 #include "CalibCalorimetry/HcalAlgos/interface/HcalTimeSlew.h"
 #include "RecoLocalCalo/HcalRecAlgos/interface/PedestalSub.h"
@@ -19,6 +20,7 @@ class HcalDeterministicFit {
   ~HcalDeterministicFit();
 
   void init(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::BiasSetting bias, bool iApplyTimeSlew, PedestalSub pedSubFxn_, std::vector<double> pars, double respCorr);
+  void setExternalPulseShape(std::string filename);
 
   void phase1Apply(const HBHEChannelInfo& channelData,
 		   float& reconstructedEnergy,
@@ -28,12 +30,14 @@ class HcalDeterministicFit {
   template<class Digi>
   void apply(const CaloSamples & cs, const std::vector<int> & capidvec, const HcalCalibrations & calibs, const Digi & digi, double& ampl, float &time) const;
   void getLandauFrac(float tStart, float tEnd, float &sum) const;
+  void getLandauFrac(float fC, int offset, double fpar0, double fpar1, double fpar2, float &sum) const;
 
  private:
   HcalTimeSlew::ParaSource fTimeSlew;
   HcalTimeSlew::BiasSetting fTimeSlewBias;
   PedestalSub fPedestalSubFxn_;
   bool applyTimeSlew_;
+  bool useExtPulse_;
 
   double fpars[9];
   double frespCorr;
@@ -57,6 +61,13 @@ class HcalDeterministicFit {
   0.0224483, 0.0210872, 0.0197684, 0.0184899, 0.01725, 0.0160471, 0.0148795, 0.0137457, 0.0126445, 
   0.0115743, 0.0105341, 0.00952249, 0.00853844, 0.00758086, 0.00664871,0.00574103, 0.00485689, 0.00399541, 
   0.00315576, 0.00233713, 0.00153878, 0.000759962, 0 };
+
+  // hardcoded array :(
+  float minCharge_[58];
+  float maxCharge_[58];
+  float pulseFrac_[58][10];
+  float pulseFracDeriv_[58][10];
+
 };
 
 template<class Digi>
