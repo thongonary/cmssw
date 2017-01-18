@@ -2,6 +2,10 @@
 #include <iostream>
 #include <fstream> 
 
+//double pulse_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
+//double digi_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
+//double noise_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
+
 void eigen_solve_submatrix(PulseMatrix& mat, PulseVector& invec, PulseVector& outvec, unsigned NP);
 
 void DoMahiAlgo::setPulseShapeTemplate(bool useCSV, std::string filename="") {
@@ -107,6 +111,68 @@ void DoMahiAlgo::Apply(const CaloSamples & cs, const std::vector<int> & capidvec
   correctedOutput.swap(fitParsVec);
 
 }  
+
+void DoMahiAlgo::phase1Apply(const HBHEChannelInfo& channelData,
+			     float& reconstructedEnergy,
+			     //			     float& chi2) const {
+			     float& chi2) {
+
+  const unsigned cssize = channelData.nSamples();
+
+  SampleVector charges;
+  SampleVector gains;
+
+  double tsTOT = 0, tstrig = 0; // in fC
+  for(unsigned int ip=0; ip<cssize; ++ip){
+    if( ip >= (unsigned)10) continue; // Too many samples than what we wanna fit (10 is enough...) -> skip them
+    //    const int capid = capidvec[ip];
+    double charge = channelData.tsRawCharge(ip);
+    double ped = channelData.tsPedestal(ip);
+    double gain = channelData.tsGain(ip);
+
+    charges.coeffRef(ip) = charge - ped;
+    gains.coeffRef(ip) = gain;
+
+    tsTOT += charge - ped;
+    if( ip ==4 || ip==5 ){
+      tstrig += charge - ped;
+    }
+  }
+
+  std::vector<double> fitParsVec;
+
+  _detID = channelData.id();
+
+  bool status =false;
+  if(tstrig >= 0) {
+    status = DoFit(charges, gains, fitParsVec); //
+  }
+
+  if (!status) {
+    fitParsVec.clear();
+    fitParsVec.push_back(0.);
+    fitParsVec.push_back(0.);
+    fitParsVec.push_back(0.);
+    fitParsVec.push_back(999.);
+  }
+
+  reconstructedEnergy = fitParsVec[0];
+  chi2 = fitParsVec[3];
+
+  /*
+  if(tsTOTen>20) std::cout << " --> ID=" << channelData.id() << " depth=" << channelData.id().depth() << " eta=" << channelData.id().ieta() << " phi=" << channelData.id().iphi() << std::endl;
+
+  for(unsigned int ip=0; ip<cssize; ++ip){
+    if( ip >= (unsigned) HcalConst::maxSamples ) continue; // Too many samples than what we wanna fit (10 is enough...) -> skip them                                                                                                   
+    //      double chi2TS=(digi_temp[ip]-pulse_temp[ip])*(digi_temp[ip]-pulse_temp[ip])/(noise_temp[ip]*noise_temp[ip]);                                                                                                               
+    //    if(tsTOTen>20) std::cout << "TS=" << ip << " == fittedPulsep[ip](GeV)=" << pulse_temp[ip] << " digi[ip](GeV)=" << digi_temp[ip] << std::endl;
+
+  }
+  */
+
+
+}
+
 
 bool DoMahiAlgo::DoFit(SampleVector amplitudes, SampleVector gains, std::vector<double> &correctedOutput) {
 

@@ -5,6 +5,11 @@
 #include "RecoLocalCalo/HcalRecAlgos/interface/PulseShapeFitOOTPileupCorrection.h"
 #include "FWCore/Utilities/interface/isFinite.h"
 
+double pulse_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
+double digi_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
+double noise_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
+bool doPrint=false;
+
 namespace FitterFuncs{
 
   //Decalare the Pulse object take it in from Hcal and set some options
@@ -96,7 +101,7 @@ namespace FitterFuncs{
 
     }
 
-    std::cout << "found templates for " << minCharge_[0] << " < Q < " << maxCharge_[57] << std::endl;
+    if(doPrint) std::cout << "found templates for " << minCharge_[0] << " < Q < " << maxCharge_[57] << std::endl;
 
     for(int i = 0; i < HcalConst::maxSamples; i++) { 
       psFit_x[i]      = 0;
@@ -207,7 +212,7 @@ namespace FitterFuncs{
 	  funcNewShape(pulse_shape_, pars[0],pars[1]);
 	}
 	for (j=0; j<nbins; ++j) {
-	  psFit_erry2[j]  = psFit_erry[j]*psFit_erry[j] + pulse_shape_[j]*pulse_shape_[j]*pulseJitter_;
+	  psFit_erry2[j]  = psFit_erry2[j] + pulse_shape_[j]*pulse_shape_[j]*pulseJitter_;
 	  pulse_shape_sum_[j] = pulse_shape_[j] + pars[nPars-1];
 	}
 
@@ -216,10 +221,10 @@ namespace FitterFuncs{
 	  time = (pars[i*2]+timeShift_-timeMean_)*HcalConst::invertnsPerBx;
 	  //Interpolate the fit (Quickly)
 	  if (isNew_ == false) {
-	    funcHPDShape(pulse_shape_, pars[i+2],pars[i*2+1],psFit_slew[time]);
+	    funcHPDShape(pulse_shape_, pars[i*2],pars[i*2+1],psFit_slew[time]);
 	  } 
 	  else {
-	    funcNewShape(pulse_shape_, pars[i+2],pars[i*2+1]);
+	    funcNewShape(pulse_shape_, pars[i*2],pars[i*2+1]);
 	  }
 	  // add an uncertainty from the pulse (currently noise * pulse height =>Ecal uses full cov)
 	 /////
@@ -250,7 +255,7 @@ namespace FitterFuncs{
 	    funcHPDShape(pulse_shape_, pars[i*2],pars[i*2+1],psFit_slew[time]);
 	  }
 	  else {
-	    funcNewShape(pulse_shape_, pars[i+2],pars[i*2+1]);
+	    funcNewShape(pulse_shape_, pars[i*2],pars[i*2+1]);
 	  }
 
 	  // add an uncertainty from the pulse (currently noise * pulse height =>Ecal uses full cov)
@@ -260,8 +265,12 @@ namespace FitterFuncs{
 	}
       }
 
-      for (i=0;i<nbins; ++i) 
+      for (i=0;i<nbins; ++i) {
         chisq += (psFit_y[i]- pulse_shape_sum_[i])*(psFit_y[i]- pulse_shape_sum_[i])/psFit_erry2[i];
+	digi_temp[i] = psFit_y[i];
+	pulse_temp[i] = pulse_shape_sum_[i];
+	noise_temp[i] = psFit_erry[i];
+      }
 
       if(pedestalConstraint_) {
 	 //Add the pedestal Constraint to chi2
@@ -723,5 +732,34 @@ void PulseShapeFitOOTPileupCorrection::phase1Apply(const HBHEChannelInfo& channe
   reconstructedTime = fitParsVec[1];
   chi2 = fitParsVec[3];
   useTriple = fitParsVec[4];
+
+
+  std::vector<float> correctedOutput;
+  correctedOutput.swap(fitParsVec);
+
+  if(doPrint && tsTOTen>20) std::cout << " --> (iEta, iPhi, Depth) = " << channelData.id() << "\n" << "TS        FittedPulse (GeV)        Digi (GeV)" << std::endl;
+
+  for(unsigned int ip=0; ip<cssize; ++ip){
+    if( ip >= (unsigned) HcalConst::maxSamples ) continue; // Too many samples than what we wanna fit (10 is enough...) -> skip them
+
+    //      double chi2TS=(digi_temp[ip]-pulse_temp[ip])*(digi_temp[ip]-pulse_temp[ip])/(noise_temp[ip]*noise_temp[ip]);
+    if(doPrint && tsTOTen>20) std::cout << ip << "         " << pulse_temp[ip] << "                " << digi_temp[ip] << std::endl;
+
+    /*
+	if(tsTOTen>20) std::cout << "TS=" << ip << " == fittedPulsep[ip](GeV)=" << pulse_temp[ip] << " digi[ip](GeV)=" << digi_temp[ip] <<
+	"( charge-ped)Arr[ip](GeV)= " << energyArr[ip] <<
+	" noiseTotal[ip](GeV)=" << noise_temp[ip] <<
+	" ( noiseDCArr[ip](GeV)=" << noiseDCArr[ip]*channelData.tsGain(ip) << " noiseADCArr[ip](GeV)=" << noiseADCArr[ip]*channelData.tsGain(ip) <<
+	" channelData.tsPedestalWidth(ip)=" << channelData.tsPedestalWidth(ip)*channelData.tsGain(ip) <<
+	" ) " << " 1/channelData.tsGain(ip)=" << 1./channelData.tsGain(ip) << " ==> chi2+="<< chi2TS << std::endl;
+	if(tsTOTen>20) std::cout << "     same in fC TS=" <<
+	" chargeArr[ip](fC)= " << chargeArr[ip] << " pedArr[ip](fC)" << pedArr[ip] <<
+	" ( noiseDCArr[ip](fC)=" << noiseDCArr[ip] << " noiseADCArr[ip](fC)=" << noiseADCArr[ip] << " channelData.tsPedestalWidth(ip)=" << channelData.tsPedestalWidth(ip) <<
+	" ) " << std::endl;
+	if(tsTOTen>20 && chi2TS>100) std::cout << "  +++ TS with high chi2 +++" << std::endl;
+      */
+
+  }
+
 
 }
