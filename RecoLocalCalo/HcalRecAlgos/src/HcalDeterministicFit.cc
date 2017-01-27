@@ -33,8 +33,8 @@ void HcalDeterministicFit::init(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::
 }
 
 void HcalDeterministicFit::setExternalPulseShape(std::string filename) {
-  useExtPulse_=true;
 
+  if (useExtPulse_) return;
   std::ifstream ifs;
   ifs.open(filename.c_str());
   assert(ifs.is_open());
@@ -55,6 +55,7 @@ void HcalDeterministicFit::setExternalPulseShape(std::string filename) {
 
     i++;
   }
+  useExtPulse_=true;
 
 }
 
@@ -97,7 +98,9 @@ void HcalDeterministicFit::getLandauFrac(float fC, int offset, double fpar0, dou
 
 void HcalDeterministicFit::phase1Apply(const HBHEChannelInfo& channelData,
 				       float& reconstructedEnergy,
-				       float& reconstructedTime) const
+				       float& reconstructedTime,
+                       float& previousEnergy,
+                       float& nextEnergy) const
 {
 
   std::vector<double> corrCharge;
@@ -257,7 +260,9 @@ void HcalDeterministicFit::phase1Apply(const HBHEChannelInfo& channelData,
 
   } ////
 
-  reconstructedEnergy=ch4*gainCorr*respCorr;
+  reconstructedEnergy=ch4*respCorr*gainCorr;
+  previousEnergy=ch3*respCorr*gainCorr;
+  nextEnergy=ch5*respCorr*gainCorr;
   reconstructedTime=tsShift4;
 
 }
