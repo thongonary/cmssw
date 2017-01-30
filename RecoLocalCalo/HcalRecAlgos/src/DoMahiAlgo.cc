@@ -466,8 +466,18 @@ bool DoMahiAlgo::NNLS() {
 
 bool DoMahiAlgo::UpdateCov() {
   //std::cout << "start update Cov" << std::endl;
+
+  // FIXME:
+  // terms below are only for the HPD
+
+  ////////
+  // THIS IS THE ELECTONIC noise
+
   const double pederr2 = 1;
   _invCovMat = pederr2*SampleMatrix::Constant(1);
+
+  ////////
+  // THIS IS THE electronic noise + ADC granularity + photoStatistics
 
   for (int i=0; i<10; i++) {
     //std::cout << _amplitudes.coeff(i) << std::endl;
@@ -475,8 +485,14 @@ bool DoMahiAlgo::UpdateCov() {
     double sigma = 0;
     if(ifC < 75) sigma = (0.577 + 0.0686*ifC)/3.; 
     else sigma = (2.75  + 0.0373*ifC + 3e-6*ifC*ifC)/3.; 
-    _invCovMat(i, i) += (1+sigma)*(1+sigma);
+
+    double sigma2 = ifC/sqrt(0.3305);
+    _invCovMat(i, i) += (1 + sigma*sigma + sigma2*sigma2);
+
   }
+
+  ///////
+  // pull all together now
 
   for (int k=0; k<_ampVec.size(); k++) {
     double ifC=_ampVec.coeff(k);
