@@ -571,7 +571,7 @@ void PulseShapeFitOOTPileupCorrection::phase1Apply(const HBHEChannelInfo& channe
 
       // Note2. (from kPedro): the output number of photoelectrons after smearing is treated very differently for SiPMs: *each* pe is assigned a different time based on a random generation from the Y11 pulse plus the SimHit time. In HPDs, the overall pulse is shaped all at once using just the SimHit time.
 
-      noisePHArr[ip] = (charge-ped)/sqrt(0.3305*16);
+      noisePHArr[ip] = (charge-ped)/sqrt(0.3305);
     }
     */
 
