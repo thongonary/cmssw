@@ -24,7 +24,9 @@ class HcalDeterministicFit {
 
   void phase1Apply(const HBHEChannelInfo& channelData,
 		   float& reconstructedEnergy,
-		   float& reconstructedTime) const;
+		   float& reconstructedTime,
+           float& dummy1,
+           float& dummy2) const;
 
   // This is the CMSSW Implementation of the apply function
   template<class Digi>

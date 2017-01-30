@@ -74,7 +74,7 @@ class DoMahiAlgo
   unsigned int _nPulseTot;
   unsigned int _nP;
 
-  bool _useCSV;
+  bool _useCSV = false;
 
   float minCharge_[58];
   float maxCharge_[58];

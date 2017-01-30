@@ -9,9 +9,9 @@
 void eigen_solve_submatrix(PulseMatrix& mat, PulseVector& invec, PulseVector& outvec, unsigned NP);
 
 void DoMahiAlgo::setPulseShapeTemplate(bool useCSV, std::string filename="") {
-  _useCSV = useCSV;
 
-  if (_useCSV && filename!="") {
+  if (_useCSV) return;
+  if (useCSV && filename!="") {
     std::ifstream ifs;
     ifs.open(filename.c_str());
     assert(ifs.is_open());
@@ -34,6 +34,7 @@ void DoMahiAlgo::setPulseShapeTemplate(bool useCSV, std::string filename="") {
 
     }
   }
+  _useCSV = useCSV;
 
 }
 
