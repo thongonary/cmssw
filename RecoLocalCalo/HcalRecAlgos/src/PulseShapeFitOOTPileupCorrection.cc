@@ -695,7 +695,6 @@ void PulseShapeFitOOTPileupCorrection::phase1Apply(const HBHEChannelInfo& channe
       noisePHArr[ip] = (charge-ped)/sqrt((charge-ped)/channelData.fcByPE());
     }
 
-    /*
     // FIXME: in the future switch the photostatistics on also for the HPD
     if(!channelData.hasTimeInfo() && (charge-ped)>channelData.tsPedestalWidth(ip)) {
 
@@ -706,7 +705,6 @@ void PulseShapeFitOOTPileupCorrection::phase1Apply(const HBHEChannelInfo& channe
 
       noisePHArr[ip] = (charge-ped)/sqrt(0.3305);
     }
-    */
 
     // sum all in quadrature
     if(channelData.hasTimeInfo()) {
