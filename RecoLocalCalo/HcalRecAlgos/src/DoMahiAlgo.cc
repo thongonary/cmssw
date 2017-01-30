@@ -486,7 +486,7 @@ bool DoMahiAlgo::UpdateCov() {
     if(ifC < 75) sigma = (0.577 + 0.0686*ifC)/3.; 
     else sigma = (2.75  + 0.0373*ifC + 3e-6*ifC*ifC)/3.; 
 
-    double sigma2 = ifC/sqrt(0.3305);
+    double sigma2 = ifC/sqrt(ifC/0.3305);
     _invCovMat(i, i) += (1 + sigma*sigma + sigma2*sigma2);
 
   }
