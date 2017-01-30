@@ -1,18 +1,6 @@
 import FWCore.ParameterSet.Config as cms
+from HLTrigger.Configuration.common import *
 
-#
-# reusable functions
-def producers_by_type(process, *types):
-    return (module for module in process._Process__producers.values() if module._TypedParameterizable__type in types)
-def filters_by_type(process, *types):
-    return (filter for filter in process._Process__filters.values() if filter._TypedParameterizable__type in types)
-def analyzers_by_type(process, *types):
-    return (analyzer for analyzer in process._Process__analyzers.values() if analyzer._TypedParameterizable__type in types)
-
-def esproducers_by_type(process, *types):
-    return (module for module in process._Process__esproducers.values() if module._TypedParameterizable__type in types)
-
-#
 # one action function per PR - put the PR number into the name of the function
 
 # example:
@@ -177,10 +165,14 @@ def customiseFor16792(process):
 # CMSSW version specific customizations
 def customizeHLTforCMSSW(process, menuType="GRun"):
 
+#   only for non-development frozen menus
+
     import os
     cmsswVersion = os.environ['CMSSW_VERSION']
 
     if cmsswVersion >= "CMSSW_8_1":
+      if menuType == "25ns15e33_v4":
+        print "# Applying 81X customization for ",menuType
         process = customiseFor14356(process)
         process = customiseFor13753(process)
         process = customiseFor14833(process)
@@ -192,6 +184,7 @@ def customizeHLTforCMSSW(process, menuType="GRun"):
         pass
 
     if cmsswVersion >= "CMSSW_9_0":
+        print "# Applying 90X customization for ",menuType
         process = customiseFor16792(process)
         process = customiseFor17094(process)
         pass
