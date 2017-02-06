@@ -3,6 +3,7 @@
 
 #include <typeinfo>
 #include <vector>
+#include <assert.h>
 
 #include "CalibCalorimetry/HcalAlgos/interface/HcalTimeSlew.h"
 #include "RecoLocalCalo/HcalRecAlgos/interface/PedestalSub.h"
@@ -19,21 +20,26 @@ class HcalDeterministicFit {
   ~HcalDeterministicFit();
 
   void init(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::BiasSetting bias, bool iApplyTimeSlew, PedestalSub pedSubFxn_, std::vector<double> pars, double respCorr);
+  void setExternalPulseShape(std::string filename);
 
   void phase1Apply(const HBHEChannelInfo& channelData,
 		   float& reconstructedEnergy,
-		   float& reconstructedTime) const;
+		   float& reconstructedTime,
+           float& dummy1,
+           float& dummy2) const;
 
   // This is the CMSSW Implementation of the apply function
   template<class Digi>
   void apply(const CaloSamples & cs, const std::vector<int> & capidvec, const HcalCalibrations & calibs, const Digi & digi, double& ampl, float &time) const;
   void getLandauFrac(float tStart, float tEnd, float &sum) const;
+  void getLandauFrac(float fC, int offset, double fpar0, double fpar1, double fpar2, float &sum) const;
 
  private:
   HcalTimeSlew::ParaSource fTimeSlew;
   HcalTimeSlew::BiasSetting fTimeSlewBias;
   PedestalSub fPedestalSubFxn_;
   bool applyTimeSlew_;
+  bool useExtPulse_;
 
   double fpars[9];
   double frespCorr;
@@ -43,6 +49,7 @@ class HcalDeterministicFit {
   static constexpr float negThresh[2] = {-3., 15.};
   static constexpr float invGpar[3] = {-13.11, 11.29, 5.133};
   static constexpr float rCorr[2] = {0.95, 0.95};
+  static constexpr float rCorrSiPM[2] = {1., 1.};
   static constexpr float landauFrac[] = {0, 7.6377e-05, 0.000418655, 0.00153692, 0.00436844, 0.0102076, 
   0.0204177, 0.0360559, 0.057596, 0.0848493, 0.117069, 0.153152, 0.191858, 0.23198, 0.272461, 0.312438, 
   0.351262, 0.388476, 0.423788, 0.457036, 0.488159, 0.517167, 0.54412, 0.569112, 0.592254, 0.613668, 
@@ -57,6 +64,13 @@ class HcalDeterministicFit {
   0.0224483, 0.0210872, 0.0197684, 0.0184899, 0.01725, 0.0160471, 0.0148795, 0.0137457, 0.0126445, 
   0.0115743, 0.0105341, 0.00952249, 0.00853844, 0.00758086, 0.00664871,0.00574103, 0.00485689, 0.00399541, 
   0.00315576, 0.00233713, 0.00153878, 0.000759962, 0 };
+
+  // hardcoded array :(
+  float minCharge_[58];
+  float maxCharge_[58];
+  float pulseFrac_[58][10];
+  float pulseFracDeriv_[58][10];
+
 };
 
 template<class Digi>
