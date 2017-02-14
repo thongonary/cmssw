@@ -70,30 +70,7 @@ void HcalDeterministicFit::init(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::
 }
 
 void HcalDeterministicFit::setExternalPulseShape(int shape) {
-
-//  if (useExtPulse_) return;
-//  std::ifstream ifs;
-//  ifs.open(filename.c_str());
-//  assert(ifs.is_open());
-//  std::string line;
-//
-//  int i = 0;
-//  while(getline(ifs,line)) {
-//    if(line[0]=='#') continue;
-//
-//    std::string tmpStr;
-//    std::stringstream ss(line);
-//    ss >> tmpStr;
-//    minCharge_[i] = std::atoi(tmpStr.c_str());
-//    ss >> tmpStr;
-//    maxCharge_[i] = std::atoi(tmpStr.c_str());
-//    for (int k=0; k<10; k++) { ss >> tmpStr; pulseFrac_[i][k] = std::atof(tmpStr.c_str()); }
-//    for (int k=0; k<10; k++) { ss >> tmpStr; pulseFracDeriv_[i][k] = std::atof(tmpStr.c_str()); }
-//
-//    i++;
-//  }
   useExtPulse_=true;
-
 }
 
 
