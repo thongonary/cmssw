@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cmath>
 #include <climits>
+#include <TMath.h>
 #include "RecoLocalCalo/HcalRecAlgos/interface/HcalDeterministicFit.h"
 
 constexpr float HcalDeterministicFit::invGpar[3];
@@ -30,34 +31,46 @@ void HcalDeterministicFit::init(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::
   fTimeSlewBias=bias;
   fPedestalSubFxn_=pedSubFxn_;
   frespCorr=respCorr;
+  
+  // Combine [0,10]+[10,20] into [0,20] and [580,590]+[590,600] into [580,600] because there's only 58 rows in pulseFrac
+  minCharge_[0] = 0;
+  maxCharge_[0] = 20;
+  float tstart0 = TMath::Min(6.0, 12.2999-2.19142*log(5));
+  for (int j = 0; j < 4; j++) pulseFrac_[0][j] = 0;
+  pulseFrac_[0][4] = landauFrac[ int( ceil( -tstart0 + 25 ) ) ];
+  pulseFrac_[0][5] = landauFrac[ int( ceil( -tstart0 + 50 ) ) ];
+  pulseFrac_[0][6] = landauFrac[ int( ceil( -tstart0 + 75 ) ) ];
+  for (int j = 7; j < 10; j++) pulseFrac_[0][j] = 0;
+  for (int j = 0; j < 10; j++) pulseFracDeriv_[0][j] = 0;
 
+  minCharge_[57] = 580;
+  maxCharge_[57] = 600;
+  float tstart1 = TMath::Min(6.0, 12.2999-2.19142*log(590));
+  for (int j = 0; j < 4; j++) pulseFrac_[57][j] = 0;
+  pulseFrac_[57][4] = landauFrac[ int( ceil( -tstart1 + 25 ) ) ];
+  pulseFrac_[57][5] = landauFrac[ int( ceil( -tstart1 + 50 ) ) ];
+  pulseFrac_[57][6] = landauFrac[ int( ceil( -tstart1 + 75 ) ) ];
+  for (int j = 7; j < 10; j++) pulseFrac_[57][j] = 0;
+  for (int j = 0; j < 10; j++) pulseFracDeriv_[57][j] = 0;
+
+  int k = 1; 
+  for (int i=25; i<580; i+=10) 
+  {
+    float tstart=TMath::Min(6.0, 12.2999-2.19142*log(i));
+    minCharge_[k] = i-5;
+    maxCharge_[k] = i+5;
+    for (int j = 0; j < 4; j++) pulseFrac_[k][j] = 0;
+    pulseFrac_[k][4] = landauFrac[ int( ceil( -tstart + 25 ) ) ];
+    pulseFrac_[k][5] = landauFrac[ int( ceil( -tstart + 50 ) ) ];
+    pulseFrac_[k][6] = landauFrac[ int( ceil( -tstart + 75 ) ) ];
+    for (int j = 7; j < 10; j++) pulseFrac_[k][j] = 0;
+    for (int j = 0; j < 10; j++) pulseFracDeriv_[k][j] = 0;
+    k++;
+  }
 }
 
-void HcalDeterministicFit::setExternalPulseShape(std::string filename) {
-
-  if (useExtPulse_) return;
-  std::ifstream ifs;
-  ifs.open(filename.c_str());
-  assert(ifs.is_open());
-  std::string line;
-
-  int i = 0;
-  while(getline(ifs,line)) {
-    if(line[0]=='#') continue;
-
-    std::string tmpStr;
-    std::stringstream ss(line);
-    ss >> tmpStr;
-    minCharge_[i] = std::atoi(tmpStr.c_str());
-    ss >> tmpStr;
-    maxCharge_[i] = std::atoi(tmpStr.c_str());
-    for (int k=0; k<10; k++) { ss >> tmpStr; pulseFrac_[i][k] = std::atof(tmpStr.c_str()); }
-    for (int k=0; k<10; k++) { ss >> tmpStr; pulseFracDeriv_[i][k] = std::atof(tmpStr.c_str()); }
-
-    i++;
-  }
+void HcalDeterministicFit::setExternalPulseShape(int shape) {
   useExtPulse_=true;
-
 }
 
 
