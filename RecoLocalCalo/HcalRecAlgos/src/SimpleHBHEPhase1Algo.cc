@@ -160,11 +160,12 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
 	if(doCout && tsTOTen>20) std::cout << "METHOD3 = setting up the default M3 landau shape =" << pulseShapeType_ << std::endl;
       } else if (pulseShapeType_==2) {
 	if(doCout && tsTOTen>20) std::cout << "METHOD3 = setting up the csv M3 landau =" << pulseShapeType_ << std::endl;
-	hltOOTpuCorr_->setExternalPulseShape(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_M3_HPD.csv").c_str());
+//	hltOOTpuCorr_->setExternalPulseShape(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_M3_HPD.csv").c_str());
+	hltOOTpuCorr_->setExternalPulseShape(2);
       } else if (pulseShapeType_==3) {
 	if(doCout && tsTOTen>20) std::cout << "METHOD3 = setting up the M2 105 CSV =" << pulseShapeType_ << std::endl;
-	if(!info.hasTimeInfo()) hltOOTpuCorr_->setExternalPulseShape(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_MC.csv").c_str());  // this is the CSV 105   
-	if(info.hasTimeInfo()) hltOOTpuCorr_->setExternalPulseShape(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_SIPM.csv").c_str()); // this is the CSV 203
+	if(!info.hasTimeInfo()) hltOOTpuCorr_->setExternalPulseShape(2);  // this is the CSV 105  HB HPD. Later will use 31.
+	if(info.hasTimeInfo()) hltOOTpuCorr_->setExternalPulseShape(2); // this is the CSV 203  HE SiPM. Later will use 32.
       }
 
     //   "phase1Apply" sets m3E and m3t (pased by non-const reference)
