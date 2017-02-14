@@ -39,7 +39,7 @@ class HcalDeterministicFit {
   HcalTimeSlew::BiasSetting fTimeSlewBias;
   PedestalSub fPedestalSubFxn_;
   bool applyTimeSlew_;
-  bool useExtPulse_;
+  bool useExtPulse_ = false;
 
   double fpars[9];
   double frespCorr;
@@ -113,64 +113,138 @@ void HcalDeterministicFit::apply(const CaloSamples & cs, const std::vector<int> 
   else if (fTimeSlew==1)respCorr=rCorr[0];
   else if (fTimeSlew==2)respCorr=rCorr[1];
   else if (fTimeSlew==3)respCorr=frespCorr;
-
-  float tsShift3=HcalTimeSlew::delay(inputCharge[3], fTimeSlew, fTimeSlewBias, fpar0, fpar1 ,fpar2);
-  float tsShift4=HcalTimeSlew::delay(inputCharge[4], fTimeSlew, fTimeSlewBias, fpar0, fpar1 ,fpar2);
-  float tsShift5=HcalTimeSlew::delay(inputCharge[5], fTimeSlew, fTimeSlewBias, fpar0, fpar1 ,fpar2);
-
-  float i3=0;
-  getLandauFrac(-tsShift3,-tsShift3+tsWidth,i3);
-  float n3=0;
-  getLandauFrac(-tsShift3+tsWidth,-tsShift3+tsWidth*2,n3);
-  float nn3=0;
-  getLandauFrac(-tsShift3+tsWidth*2,-tsShift3+tsWidth*3,nn3);
-
-  float i4=0;
-  getLandauFrac(-tsShift4,-tsShift4+tsWidth,i4);
-  float n4=0;
-  getLandauFrac(-tsShift4+tsWidth,-tsShift4+tsWidth*2,n4);
-
-  float i5=0;
-  getLandauFrac(-tsShift5,-tsShift5+tsWidth,i5);
-  float n5=0;
-  getLandauFrac(-tsShift5+tsWidth,-tsShift5+tsWidth*2,n5);
-
+    
   float ch3=0;
   float ch4=0;
   float ch5=0;
 
-  if (i3 != 0 && i4 != 0 && i5 != 0) {
+  float tsShift3=0;
+  float tsShift4=0;
+  float tsShift5=0;
 
-    ch3=corrCharge[3]/i3;
-    ch4=(i3*corrCharge[4]-n3*corrCharge[3])/(i3*i4);
-    ch5=(n3*n4*corrCharge[3]-i4*nn3*corrCharge[3]-i3*n4*corrCharge[4]+i3*i4*corrCharge[5])/(i3*i4*i5);
+  if(useExtPulse_) {
 
-    if (ch3<negThresh[0]) {
-      ch3=negThresh[0];
-      ch4=corrCharge[4]/i4;
-      ch5=(i4*corrCharge[5]-n4*corrCharge[4])/(i4*i5);
+    float i3=0;
+    getLandauFrac(inputCharge[3], 1, fpar0, fpar1, fpar2, i3);
+    float n3=0;
+    getLandauFrac(inputCharge[3], 2, fpar0, fpar1, fpar2, n3);
+    float nn3=0;
+    getLandauFrac(inputCharge[3], 3, fpar0, fpar1, fpar2, nn3);
+
+    float i4=0;
+    getLandauFrac(inputCharge[4], 1, fpar0, fpar1, fpar2, i4);
+    float n4=0;
+    getLandauFrac(inputCharge[4], 2, fpar0, fpar1, fpar2, n4);
+
+    float i5=0;
+    getLandauFrac(inputCharge[5], 1, fpar0, fpar1, fpar2, i5);
+    float n5=0;
+    getLandauFrac(inputCharge[5], 2, fpar0, fpar1, fpar2, n5);
+
+    if (i3 != 0 && i4 != 0 && i5 != 0) 
+    {
+        ch3=corrCharge[3]/i3;
+        ch4=(i3*corrCharge[4]-n3*corrCharge[3])/(i3*i4);
+        ch5=(n3*n4*corrCharge[3]-i4*nn3*corrCharge[3]-i3*n4*corrCharge[4]+i3*i4*corrCharge[5])/(i3*i4*i5);
+
+        if (ch3<negThresh[0]) 
+        {
+            ch3=negThresh[0];
+            ch4=corrCharge[4]/i4;
+            ch5=(i4*corrCharge[5]-n4*corrCharge[4])/(i4*i5);
+        }
+        if (ch5<negThresh[0] && ch4>negThresh[1]) 
+        {
+            double ratio = (corrCharge[4]-ch3*i3)/(corrCharge[5]-negThresh[0]*i5);
+            if (ratio < 5 && ratio > 0.5) 
+            {
+                //double invG = invGpar[0]+invGpar[1]*std::sqrt(2*std::log(invGpar[2]/ratio));
+                float iG=0;
+                //getLandauFrac(-invG,-invG+tsWidth,iG);
+                if (iG != 0 ) 
+                {
+                    ch4=(corrCharge[4]-ch3*n3)/(iG);
+                    //tsShift4=invG;
+	            }
+	        }   
+        }
     }
-    if (ch5<negThresh[0] && ch4>negThresh[1]) {
-      double ratio = (corrCharge[4]-ch3*i3)/(corrCharge[5]-negThresh[0]*i5);
-      if (ratio < 5 && ratio > 0.5) {
-        double invG = invGpar[0]+invGpar[1]*std::sqrt(2*std::log(invGpar[2]/ratio));
-        float iG=0;
-        getLandauFrac(-invG,-invG+tsWidth,iG);
-        if (iG != 0 ) {
-	  ch4=(corrCharge[4]-ch3*n3)/(iG);
-	  tsShift4=invG;
-	}
+
+    if (ch4<1) 
+    {
+      ch4=0;
+    }
+    double ampl=ch4*gainCorr*respCorr;
+    reconstructedEnergy=ampl;
+    reconstructedTime=tsShift4;
+  } 
+  else
+  { 
+      if(applyTimeSlew_) 
+      {
+          float tsShift3=HcalTimeSlew::delay(inputCharge[3], fTimeSlew, fTimeSlewBias, fpar0, fpar1 ,fpar2);
+          float tsShift4=HcalTimeSlew::delay(inputCharge[4], fTimeSlew, fTimeSlewBias, fpar0, fpar1 ,fpar2);
+          float tsShift5=HcalTimeSlew::delay(inputCharge[5], fTimeSlew, fTimeSlewBias, fpar0, fpar1 ,fpar2);
       }
-    }
-  }
 
-  if (ch4<1) {
-    ch4=0;
-  }
+      float i3=0;
+      getLandauFrac(-tsShift3,-tsShift3+tsWidth,i3);
+      float n3=0;
+      getLandauFrac(-tsShift3+tsWidth,-tsShift3+tsWidth*2,n3);
+      float nn3=0;
+      getLandauFrac(-tsShift3+tsWidth*2,-tsShift3+tsWidth*3,nn3);
 
-  double ampl=ch4*gainCorr*respCorr;
-  reconstructedEnergy=ampl;
-  reconstructedTime=tsShift4;
+      float i4=0;
+      getLandauFrac(-tsShift4,-tsShift4+tsWidth,i4);
+      float n4=0;
+      getLandauFrac(-tsShift4+tsWidth,-tsShift4+tsWidth*2,n4);
+
+      float i5=0;
+      getLandauFrac(-tsShift5,-tsShift5+tsWidth,i5);
+      float n5=0;
+      getLandauFrac(-tsShift5+tsWidth,-tsShift5+tsWidth*2,n5);
+
+      float ch3=0;
+      float ch4=0;
+      float ch5=0;
+
+      if (i3 != 0 && i4 != 0 && i5 != 0) 
+      {
+            ch3=corrCharge[3]/i3;
+            ch4=(i3*corrCharge[4]-n3*corrCharge[3])/(i3*i4);
+            ch5=(n3*n4*corrCharge[3]-i4*nn3*corrCharge[3]-i3*n4*corrCharge[4]+i3*i4*corrCharge[5])/(i3*i4*i5);
+
+            if (ch3<negThresh[0]) 
+            {
+                ch3=negThresh[0];
+                ch4=corrCharge[4]/i4;
+                ch5=(i4*corrCharge[5]-n4*corrCharge[4])/(i4*i5);
+            }
+            if (ch5<negThresh[0] && ch4>negThresh[1]) 
+            {
+                double ratio = (corrCharge[4]-ch3*i3)/(corrCharge[5]-negThresh[0]*i5);
+                if (ratio < 5 && ratio > 0.5) 
+                {
+                    double invG = invGpar[0]+invGpar[1]*std::sqrt(2*std::log(invGpar[2]/ratio));
+                    float iG=0;
+                    getLandauFrac(-invG,-invG+tsWidth,iG);
+                    if (iG != 0 ) 
+                    {
+                        ch4=(corrCharge[4]-ch3*n3)/(iG);
+                        tsShift4=invG;
+                    }
+                }
+            }
+      }
+
+      if (ch4<1) {
+        ch4=0;
+      }
+    double ampl=ch4*gainCorr*respCorr;
+    reconstructedEnergy=ampl;
+    reconstructedTime=tsShift4;
+ }
+
 }
 
 

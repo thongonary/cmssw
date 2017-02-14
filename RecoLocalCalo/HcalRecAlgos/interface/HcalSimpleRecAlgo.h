@@ -82,6 +82,8 @@ public:
         psFitOOTpuCorr_ = std::make_unique<PulseShapeFitOOTPileupCorrection>();
     else if ( puCorrMethod_ == 10 )
       psFitMAHIOOTpuCorr_ = std::make_unique<DoMahiAlgo>();
+    else if ( puCorrMethod_ == 3 )
+      hltOOTpuCorr_ = std::make_unique<HcalDeterministicFit>();
   }
 
   void setPulseShape(int shape){

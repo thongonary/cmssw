@@ -86,9 +86,13 @@ void HcalSimpleRecAlgo::setMeth3Params( bool iApplyTimeSlew, float iPedSubThresh
 void HcalSimpleRecAlgo::setForData (int runnumm , bool isBarrel) { 
    runnum_ = runnumm;
    char *cmssw = getenv("CMSSW_BASE");
-   if( puCorrMethod_ ==2 ){
+
+   // Run "Method 2"
+   if( puCorrMethod_ ==2 )
+   {
       int shapeNum = HPDShapev3MCNum;
-      if( runnum_ > 0 ){
+      if( runnum_ > 0 )
+      {
          shapeNum = HPDShapev3DataNum;
       }
 
@@ -96,40 +100,58 @@ void HcalSimpleRecAlgo::setForData (int runnumm , bool isBarrel) {
 
       if(pulseShapeType_==1) psFitOOTpuCorr_->setPulseShapeTemplate(theHcalPulseShapes_.getShape(shapeNum),isHPD); // this is the standard 105
       if(pulseShapeType_==2) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HBHE.csv").c_str(),isHPD); // this is the CSV 105
-      if(pulseShapeType_==3) {
-	//	std::cout << "setting up the new pulse type=" << pulseShapeType_ << std::endl;
-	if( runnum_ == 0 ){
-	  // this means MC
-	  if(isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_MC.csv").c_str(),isHPD); // this is the LAG, MC
-	  if(!isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_MC_HPD.csv").c_str(),isHPD); // this is the LAG, MC
-	}
-	if( runnum_ > 0 ){
-	  // this means data
-	  if(isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_Dat.csv").c_str(),isHPD); // this is the LAG, Data
-	  if(!isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_Dat_HPD.csv").c_str(),isHPD); // this is the LAG, Data
-	}
-
-      } // end pulse shape 2
-
+      if(pulseShapeType_==3) 
+      {
+        //	std::cout << "setting up the new pulse type=" << pulseShapeType_ << std::endl;
+        if( runnum_ == 0 )
+        {
+          // this means MC
+          if(isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_MC.csv").c_str(),isHPD); // this is the LAG, MC
+          if(!isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_MC_HPD.csv").c_str(),isHPD); // this is the LAG, MC
+        }
+        if( runnum_ > 0 )
+        {
+          // this means data
+          if(isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_Dat.csv").c_str(),isHPD); // this is the LAG, Data
+          if(!isBarrel) psFitOOTpuCorr_->newSetPulseShapeTemplate(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_Dat_HPD.csv").c_str(),isHPD); // this is the LAG, Data
+        }
+     } // end pulse shape 2
    }
-   else if ( puCorrMethod_ == 10) {
 
-     if(pulseShapeType_==2) {
-
+   // Run MAHI
+   else if ( puCorrMethod_ == 10) 
+   {
+     if(pulseShapeType_==2) 
+     {
        psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true, ((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HBHE.csv").c_str()); // this is the CSV 105
-
-     } else if(pulseShapeType_==3) {
-       if ( runnum_ == 0) {
-	 if (isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true, ((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_MC.csv").c_str()); // this is the LAG, MC
-	 if (!isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true, ((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_MC_HPD.csv").c_str()); // this is the LAG, MC
+     } 
+     else if(pulseShapeType_==3) 
+     {
+       if ( runnum_ == 0) 
+       {
+	    if (isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true, ((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_MC.csv").c_str()); // this is the LAG, MC
+	    if (!isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true, ((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_MC_HPD.csv").c_str()); // this is the LAG, MC
        }
-       if ( runnum_ >0 ) {
-	 if (isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true, ((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_Dat.csv").c_str()); // this is the LAG, Data
-	 if (!isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true, ((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_Dat_HPD.csv").c_str()); // this is the LAG, Data
+       if ( runnum_ >0 ) 
+       {
+	    if (isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true, ((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HB_Dat.csv").c_str()); // this is the LAG, Data
+	    if (!isBarrel) psFitMAHIOOTpuCorr_->setPulseShapeTemplate(true, ((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_HE_Dat_HPD.csv").c_str()); // this is the LAG, Data
        }
      }
-
    }
+
+  // Run M3 
+  else if (puCorrMethod_ == 3)
+  {
+     if (pulseShapeType_==2)
+     {
+	    hltOOTpuCorr_->setExternalPulseShape(2);
+     }
+     else if (pulseShapeType_==3)
+     {
+	    hltOOTpuCorr_->setExternalPulseShape(3);
+     }
+  }
 }
 
 void HcalSimpleRecAlgo::setLeakCorrection () { setLeakCorrection_ = true;}
@@ -173,7 +195,8 @@ namespace HcalSimpleRecAlgoImpl {
   {
     // Handle negative excursions by moving "zero":
     float zerocorr=std::min(t0,t2);
-    if (zerocorr<0.f) {
+    if (zerocorr<0.f) 
+    {
       t0   -= zerocorr;
       t2   -= zerocorr;
       maxA -= zerocorr;
@@ -425,8 +448,14 @@ namespace HcalSimpleRecAlgoImpl {
         const int capid = digi[ip].capid();
         capidvec.push_back(capid);
       }
-      hltOOTpuCorr->apply(cs, capidvec, calibs, digi, m3_ampl,m3_time);
-      if (puCorrMethod == 3) {ampl = m3_ampl; time=m3_time;}
+
+      hltOOTpuCorr->apply(cs, capidvec, calibs, digi, m3_ampl, m3_time);
+      if (puCorrMethod == 3) 
+      {
+          ampl = m3_ampl; 
+          time=m3_time;
+       //   std::cout << "M3E = " << ampl << std::endl;
+      }
     }
 
     // Temporary hack to apply energy-dependent corrections to some HB- cells
@@ -502,7 +531,8 @@ namespace HcalSimpleRecAlgoImpl {
 	time=time-calibs.timecorr(); // time calibration
       }
 
-    //  THIS IS MAHI
+    //  THIS IS 
+    //  MAHI
     if( puCorrMethod == 10 ){
       // FIXME: need to remove those std::vector<double> correctedOutput
       std::vector<double> correctedOutput;
@@ -556,7 +586,12 @@ namespace HcalSimpleRecAlgoImpl {
       float m3_time=0;
 
       hltOOTpuCorr->apply(cs, capidvec, calibs, digi, m3_ampl, m3_time);
-      if (puCorrMethod == 3) { ampl = m3_ampl; time = m3_time; }
+      if (puCorrMethod == 3) 
+      { 
+          ampl = m3_ampl; 
+          time = m3_time; 
+        //  std::cout << "M3E = " << ampl << std::endl;
+      }
 
     }
 

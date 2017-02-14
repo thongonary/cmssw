@@ -129,7 +129,7 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
 	
 	if(pulseShapeType_==3) 
     {
-	  if(doCout && tsTOTen>20) std::cout << "METHOD2 = setting up the LAG pulse type=" << pulseShapeType_ << std::endl;
+	  if(doCout && tsTOTen>20) std::cout << "METHOD3 = setting up the LAG pulse type=" << pulseShapeType_ << std::endl;
         
       if(!isData )
       {
