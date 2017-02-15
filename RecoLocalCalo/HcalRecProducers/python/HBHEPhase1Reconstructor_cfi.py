@@ -60,8 +60,15 @@ hbheprereco = cms.EDProducer(
         # Use "Method 2"?
         useM2 = cms.bool(True),
 
-        # Use "Method 3"? Change this to True when implemented.
-        useM3 = cms.bool(False)
+        # Use "Method 3"?
+        useM3 = cms.bool(True),
+
+        # Use "Mahi 3"?
+        useMahi = cms.bool(False),
+
+        # Set "pulse shape"  #==1 105full; #==2 105csv; #==3 LAGcsv
+        pulseShapeType = cms.int32(1)
+
     ),
 
     # Reconstruction algorithm configuration data to fetch from DB, if any
