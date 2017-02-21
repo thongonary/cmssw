@@ -110,12 +110,10 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
     // for now run only on the barrel
     if(!info.hasTimeInfo()) {
 
-
     // Run "Method 2"
     if (method2)
     {
-
-
+    std::cout << "m2 enabled\n";
 	if(pulseShapeType_==1) {
 	  if(doCout && tsTOTen>20) std::cout << "METHOD2 = setting up the default shape=" << pulseShapeType_ << std::endl;
 	  psFitOOTpuCorr_->setPulseShapeTemplate(theHcalPulseShapes_.getShape(info.recoShape()),!info.hasTimeInfo()); // this is the standard 105
@@ -155,24 +153,25 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
     // Run "Method 3"
     if (method3)
     {
-
-      if(pulseShapeType_==1) {
+     std::cout << "simple " << pulseShapeType_ << std::endl;
+      if(pulseShapeType_==0) {
 	if(doCout && tsTOTen>20) std::cout << "METHOD3 = setting up the default M3 landau shape =" << pulseShapeType_ << std::endl;
-      } else if (pulseShapeType_==2) {
+	hltOOTpuCorr_->setExternalPulseShape(0);
+      } else if (pulseShapeType_==1) {
 	if(doCout && tsTOTen>20) std::cout << "METHOD3 = setting up the csv M3 landau =" << pulseShapeType_ << std::endl;
 //	hltOOTpuCorr_->setExternalPulseShape(((std::string)cmssw+"/src/CalibCalorimetry/HcalAlgos/data/pulse_shape_M3_HPD.csv").c_str());
-	hltOOTpuCorr_->setExternalPulseShape(2);
-      } else if (pulseShapeType_==3) {
+	hltOOTpuCorr_->setExternalPulseShape(1);
+      } else if (pulseShapeType_==2) {
 	if(doCout && tsTOTen>20) std::cout << "METHOD3 = setting up the M2 105 CSV =" << pulseShapeType_ << std::endl;
-	if(!info.hasTimeInfo()) hltOOTpuCorr_->setExternalPulseShape(2);  // this is the CSV 105  HB HPD. Later will use 31.
-	if(info.hasTimeInfo()) hltOOTpuCorr_->setExternalPulseShape(2); // this is the CSV 203  HE SiPM. Later will use 32.
+	if (!info.hasTimeInfo()) hltOOTpuCorr_->setExternalPulseShape(2);  // this is the CSV 105  HB HPD.
+	if(info.hasTimeInfo()) hltOOTpuCorr_->setExternalPulseShape(4); // this is the CSV 203  HE SiPM. 
       }
 
     //   "phase1Apply" sets m3E and m3t (pased by non-const reference)
 
       method3->phase1Apply(info, m3E, m3t,m3Ets3,m3Ets5);
       m3E *= hbminusCorrectionFactor(channelId, m3E, isData);
-
+      std::cout << "shape = " << pulseShapeType_ << "\t m3E = " << m3E << std::endl;
     }
 
     // Run "Mahi"
@@ -183,6 +182,7 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
     
     if (mahi)
     {
+    std::cout << "mahi enabled\n";
 
       if(!info.hasTimeInfo()) {
 	if(doCout && tsTOTen>20) std::cout << "MAHI = setting up the LAG pulse type=" << pulseShapeType_ << std::endl;

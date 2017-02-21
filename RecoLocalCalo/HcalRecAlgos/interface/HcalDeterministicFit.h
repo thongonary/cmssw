@@ -13,6 +13,7 @@
 #include "CalibCalorimetry/HcalAlgos/interface/HcalPulseShapes.h"
 #include "CalibFormats/HcalObjects/interface/HcalCoder.h"
 #include "CalibFormats/HcalObjects/interface/HcalCalibrations.h"
+#include "RecoLocalCalo/HcalRecAlgos/interface/PulseShapeFitOOTPileupCorrection.h"
 
 class HcalDeterministicFit {
  public:
@@ -21,6 +22,9 @@ class HcalDeterministicFit {
 
   void init(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::BiasSetting bias, bool iApplyTimeSlew, PedestalSub pedSubFxn_, std::vector<double> pars, double respCorr);
   void setExternalPulseShape(int shape);
+  
+  void compute105(std::array<double,HcalConst::maxSamples> &ntmpbin, float pulseTime);
+  void makeShape105();
 
   void phase1Apply(const HBHEChannelInfo& channelData,
 		   float& reconstructedEnergy,
@@ -37,10 +41,12 @@ class HcalDeterministicFit {
  private:
   HcalTimeSlew::ParaSource fTimeSlew;
   HcalTimeSlew::BiasSetting fTimeSlewBias;
+  
+  
   PedestalSub fPedestalSubFxn_;
   bool applyTimeSlew_;
   bool useExtPulse_ = false;
-
+  int shape_;
   double fpars[9];
   double frespCorr;
  
@@ -71,6 +77,47 @@ class HcalDeterministicFit {
   float pulseFrac_[58][10];
   float pulseFracDeriv_[58][10];
   float timeSlew_[58];
+  
+  // array for landau
+  float minCharge1_[58];
+  float maxCharge1_[58];
+  float pulseFrac1_[58][10];
+  float pulseFracDeriv1_[58][10];
+  float timeSlew1_[58];
+ 
+  // array for 105
+  float minCharge2_[58];
+  float maxCharge2_[58];
+  float pulseFrac2_[58][10];
+  float pulseFracDeriv2_[58][10];
+  float timeSlew2_[58];
+  
+  // from 105 template maker
+  double tzero[3]= {23.960177, 13.307784, 9.109694};
+  double slope[3] = {-3.178648,  -1.556668, -1.075824 };
+  double tmax[3] = {16.00, 10.00, 6.25 };
+  
+  float ts1_, ts2_, ts3_;
+  float thpd_, tpre_;
+  float wd1_, wd2_, wd3_;
+  int ibin_;
+
+  std::vector<float> Shape_;  
+
+  std::vector<float> acc25nsVec; 
+  std::vector<float> diff25nsItvlVec;
+  std::vector<float> accVarLenIdxZEROVec;
+  std::vector<float> diffVarItvlIdxZEROVec;
+  std::vector<float> accVarLenIdxMinusOneVec;
+  std::vector<float> diffVarItvlIdxMinusOneVec;
+
+ 
+  // array for 203
+  float minCharge3_[58];
+  float maxCharge3_[58];
+  float pulseFrac3_[58][10];
+  float pulseFracDeriv3_[58][10];
+  float timeSlew3_[58];
 };
 
 template<class Digi>
@@ -164,7 +211,7 @@ void HcalDeterministicFit::apply(const CaloSamples & cs, const std::vector<int> 
 
 	  if (i4_new!=0) 
 	    {
-	      std::cout << ch4 << ", " << (corrCharge[4]-ch3*n3)/(i4_new) << std::endl;
+//	      std::cout << ch4 << ", " << (corrCharge[4]-ch3*n3)/(i4_new) << std::endl;
 	      ch5=negThresh[0];
 	      ch4=(corrCharge[4]-ch3*n3)/(i4_new);
 	    }
@@ -247,6 +294,8 @@ void HcalDeterministicFit::apply(const CaloSamples & cs, const std::vector<int> 
  }
 
 }
+
+
 
 
 #endif // HLTAnalyzer_h
