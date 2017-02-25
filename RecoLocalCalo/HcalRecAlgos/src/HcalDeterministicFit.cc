@@ -2,6 +2,9 @@
 #include <cmath>
 #include <climits>
 #include "RecoLocalCalo/HcalRecAlgos/interface/HcalDeterministicFit.h"
+#include <TF1.h>
+
+bool useDB2 = true;
 
 constexpr float HcalDeterministicFit::invGpar[3];
 constexpr float HcalDeterministicFit::negThresh[2];
@@ -17,7 +20,7 @@ HcalDeterministicFit::HcalDeterministicFit() {
 HcalDeterministicFit::~HcalDeterministicFit() { 
 }
 
-void HcalDeterministicFit::init(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::BiasSetting bias, bool iApplyTimeSlew, PedestalSub pedSubFxn_, std::vector<double> pars, double respCorr) {
+void HcalDeterministicFit::init(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::BiasSetting bias, bool iApplyTimeSlew, PedestalSub pedSubFxn_, NewPulseShapes pulseShapes_, std::vector<double> pars, double respCorr) {
   for(int fi=0; fi<9; fi++){
 	fpars[fi] = pars.at(fi);
   }
@@ -28,6 +31,7 @@ void HcalDeterministicFit::init(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::
   fPedestalSubFxn_=pedSubFxn_;
   frespCorr=respCorr;
 
+  fPulseShapes_ = pulseShapes_;
 }
 
 constexpr float HcalDeterministicFit::landauFrac[];
@@ -44,6 +48,77 @@ void HcalDeterministicFit::getLandauFrac(float tStart, float tEnd, float &sum) c
   sum= landauFrac[int(ceil(tStart+tsWidth))];
   return;
 }
+
+float HcalDeterministicFit::getNegativeEnergyCorr(float fC, float corrTS) const {
+  /*
+  float a4=0, a5=0, b4=0, b5=0, c4=0, c5=0, d4=0, d5=0;
+
+  double tmpFC=fC;
+  if (fC<loThresh) tmpFC=loThresh;
+
+  if (tmpFC < flip[4]) {
+    a4 = par0[4][0];
+    b4 = par1[4][0];
+    c4 = par2[4][0];
+    d4 = par3[4][0];
+
+    a5 = par0[5][0];
+    b5 = par1[5][0];
+    c5 = par2[5][0];
+    d5 = par3[5][0];
+
+  }
+  else {
+    a4 = par0[4][1];
+    b4 = par1[4][1];
+    c4 = par2[4][1];
+    d4 = par3[4][1];
+
+    a5 = par0[5][1];
+    b5 = par1[5][1];
+    c5 = par2[5][1];
+    d5 = par3[5][1];
+
+  }
+
+  TF1 f4("f4","[0]+[1]*log(x)+[2]*log(x)*log(x)+[3]*log(x)*log(x)*log(x)",0,3000);
+  f4.SetParameter(0,a4);
+  f4.SetParameter(1,b4);  
+  f4.SetParameter(2,c4);
+  f4.SetParameter(3,d4);
+
+  TF1 f5("f5","[0]+[1]*log(x)+[2]*log(x)*log(x)+[3]*log(x)*log(x)*log(x)",0,3000);
+  f5.SetParameter(0,a5);
+  f5.SetParameter(1,b5);  
+  f5.SetParameter(2,c5);
+  f5.SetParameter(3,d5);
+
+  TF1 ts("ts","([0]+[1]*log(x)+[2]*log(x)*log(x)+[3]*log(x)*log(x)*log(x))/([4]+[5]*log(x)+[6]*log(x)*log(x)+[7]*log(x)*log(x)*log(x))",0,3000);
+  ts.SetParameter(4,a4);
+  ts.SetParameter(5,b4);  
+  ts.SetParameter(6,c4);
+  ts.SetParameter(7,d4);
+  ts.SetParameter(0,a5);
+  ts.SetParameter(1,b5);  
+  ts.SetParameter(2,c5);
+  ts.SetParameter(3,d5);
+
+  if (ts.Eval(1500)>corrTS)
+    return 2200;
+  else if (ts.Eval(700)>corrTS) 
+    return 1100;
+  else if (ts.Eval(400)>corrTS) 
+    return 800;
+  else if (ts.Eval(200)>corrTS) 
+    return 300;
+  else if (ts.Eval(100)>corrTS) 
+    return 50;
+  */
+
+  return 10;
+
+}
+
 
 void HcalDeterministicFit::phase1Apply(const HBHEChannelInfo& channelData,
 				       float& reconstructedEnergy,
@@ -105,25 +180,45 @@ void HcalDeterministicFit::phase1Apply(const HBHEChannelInfo& channelData,
   }
 
   float i3=0;
-  getLandauFrac(-tsShift3,-tsShift3+tsWidth,i3);
   float n3=0;
-  getLandauFrac(-tsShift3+tsWidth,-tsShift3+tsWidth*2,n3);
   float nn3=0;
-  getLandauFrac(-tsShift3+tsWidth*2,-tsShift3+tsWidth*3,nn3);
 
   float i4=0;
-  getLandauFrac(-tsShift4,-tsShift4+tsWidth,i4);
   float n4=0;
-  getLandauFrac(-tsShift4+tsWidth,-tsShift4+tsWidth*2,n4);
 
   float i5=0;
-  getLandauFrac(-tsShift5,-tsShift5+tsWidth,i5);
-  float n5=0;
-  getLandauFrac(-tsShift5+tsWidth,-tsShift5+tsWidth*2,n5);
+  float n5=0;  
 
   float ch3=0;
   float ch4=0;
   float ch5=0;
+
+  if (useDB2) {
+    float sum3=fPulseShapes_.getPulseFracNorm(inputCharge[3],0);
+    float sum4=fPulseShapes_.getPulseFracNorm(inputCharge[4],0);
+    float sum5=fPulseShapes_.getPulseFracNorm(inputCharge[5],0);
+
+    i3=fPulseShapes_.getPulseFrac(inputCharge[3],0,4)/sum3;
+    n3=fPulseShapes_.getPulseFrac(inputCharge[3],0,5)/sum3;
+    nn3=fPulseShapes_.getPulseFrac(inputCharge[3],0,6)/sum3;
+
+    i4=fPulseShapes_.getPulseFrac(inputCharge[4],0,4)/sum4;
+    n4=fPulseShapes_.getPulseFrac(inputCharge[4],0,5)/sum4;
+
+    i5=fPulseShapes_.getPulseFrac(inputCharge[5],0,4)/sum5;
+    n5=fPulseShapes_.getPulseFrac(inputCharge[5],0,5)/sum5;
+  }
+  else {
+    getLandauFrac(-tsShift3,-tsShift3+tsWidth,i3);
+    getLandauFrac(-tsShift3+tsWidth,-tsShift3+tsWidth*2,n3);
+    getLandauFrac(-tsShift3+tsWidth*2,-tsShift3+tsWidth*3,nn3);
+    
+    getLandauFrac(-tsShift4,-tsShift4+tsWidth,i4);
+    getLandauFrac(-tsShift4+tsWidth,-tsShift4+tsWidth*2,n4);
+    
+    getLandauFrac(-tsShift5,-tsShift5+tsWidth,i5);
+    getLandauFrac(-tsShift5+tsWidth,-tsShift5+tsWidth*2,n5);
+  }
 
   if (i3 != 0 && i4 != 0 && i5 != 0) {
 
@@ -137,23 +232,38 @@ void HcalDeterministicFit::phase1Apply(const HBHEChannelInfo& channelData,
       ch5=(i4*corrCharge[5]-n4*corrCharge[4])/(i4*i5);
     }
     if (ch5<negThresh[0] && ch4>negThresh[1]) {
-      double ratio = (corrCharge[4]-ch3*i3)/(corrCharge[5]-negThresh[0]*i5);
-      if (ratio < 5 && ratio > 0.5) {
-        double invG = invGpar[0]+invGpar[1]*std::sqrt(2*std::log(invGpar[2]/ratio));
-        float iG=0;
-	getLandauFrac(-invG,-invG+tsWidth,iG);
-	if (iG != 0 ) {
-	  ch4=(corrCharge[4]-ch3*n3)/(iG);
-	  tsShift4=invG;
+      if (useDB2) {
+	float newTS = (corrCharge[5]-negThresh[0]*i5)/(corrCharge[4]-ch3*i3);
+	float newQ = getNegativeEnergyCorr(corrCharge[4], newTS);
+	float i4_new = fPulseShapes_.getPulseFrac(newQ,0,4)/fPulseShapes_.getPulseFracNorm(newQ,0);
+
+	if (i4_new!=0){
+	  ch5=negThresh[0];
+	  ch4=(corrCharge[4]-ch3*n3)/(i4_new);
 	}
+
       }
+      else {
+	double ratio = (corrCharge[4]-ch3*i3)/(corrCharge[5]-negThresh[0]*i5);
+	if (ratio < 5 && ratio > 0.5) {
+	  double invG = invGpar[0]+invGpar[1]*std::sqrt(2*std::log(invGpar[2]/ratio));
+	  float iG=0;
+	  getLandauFrac(-invG,-invG+tsWidth,iG);
+	  if (iG != 0 ) {
+	    ch4=(corrCharge[4]-ch3*n3)/(iG);
+	    tsShift4=invG;
+	  }
+	}
+
+      }
+
     }
   }
 
   if (ch4<1) {
     ch4=0;
   }
-
+  
   reconstructedEnergy=ch4*gainCorr*respCorr;
   reconstructedTime=tsShift4;
 }

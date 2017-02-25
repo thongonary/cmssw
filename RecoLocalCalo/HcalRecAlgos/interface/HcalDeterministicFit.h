@@ -4,12 +4,16 @@
 #include <typeinfo>
 #include <vector>
 
-#include "CalibCalorimetry/HcalAlgos/interface/HcalTimeSlew.h"
+#include <memory>
+#include "boost/shared_ptr.hpp"
+
 #include "RecoLocalCalo/HcalRecAlgos/interface/PedestalSub.h"
+#include "CalibCalorimetry/HcalAlgos/interface/HcalTimeSlew.h"
+#include "RecoLocalCalo/HcalRecAlgos/interface/NewPulseShapes.h"
 
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
 #include "DataFormats/HcalRecHit/interface/HBHEChannelInfo.h"
-#include "CalibCalorimetry/HcalAlgos/interface/HcalPulseShapes.h"
+
 #include "CalibFormats/HcalObjects/interface/HcalCoder.h"
 #include "CalibFormats/HcalObjects/interface/HcalCalibrations.h"
 
@@ -18,7 +22,7 @@ class HcalDeterministicFit {
   HcalDeterministicFit();
   ~HcalDeterministicFit();
 
-  void init(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::BiasSetting bias, bool iApplyTimeSlew, PedestalSub pedSubFxn_, std::vector<double> pars, double respCorr);
+  void init(HcalTimeSlew::ParaSource tsParam, HcalTimeSlew::BiasSetting bias, bool iApplyTimeSlew, PedestalSub pedSubFxn_, NewPulseShapes pulseShapes_, std::vector<double> pars, double respCorr);
 
   void phase1Apply(const HBHEChannelInfo& channelData,
 		   float& reconstructedEnergy,
@@ -28,11 +32,13 @@ class HcalDeterministicFit {
   template<class Digi>
   void apply(const CaloSamples & cs, const std::vector<int> & capidvec, const HcalCalibrations & calibs, const Digi & digi, double& ampl, float &time) const;
   void getLandauFrac(float tStart, float tEnd, float &sum) const;
+  float getNegativeEnergyCorr(float fC, float corrTS) const;
 
  private:
   HcalTimeSlew::ParaSource fTimeSlew;
   HcalTimeSlew::BiasSetting fTimeSlewBias;
   PedestalSub fPedestalSubFxn_;
+  NewPulseShapes fPulseShapes_;
   bool applyTimeSlew_;
 
   double fpars[9];
@@ -58,6 +64,9 @@ class HcalDeterministicFit {
   0.0224483, 0.0210872, 0.0197684, 0.0184899, 0.01725, 0.0160471, 0.0148795, 0.0137457, 0.0126445, 
   0.0115743, 0.0105341, 0.00952249, 0.00853844, 0.00758086, 0.00664871,0.00574103, 0.00485689, 0.00399541, 
   0.00315576, 0.00233713, 0.00153878, 0.000759962, 0 };
+
+
+
 };
 
 template<class Digi>

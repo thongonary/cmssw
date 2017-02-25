@@ -24,6 +24,7 @@
 #include "RecoLocalCalo/HcalRecAlgos/interface/HcalDeterministicFit.h"
 
 #include "RecoLocalCalo/HcalRecAlgos/interface/PedestalSub.h"
+#include "RecoLocalCalo/HcalRecAlgos/interface/NewPulseShapes.h"
 
 /** \class HcalSimpleRecAlgo
 
@@ -108,12 +109,11 @@ private:
 
   int puCorrMethod_;
 
-  std::unique_ptr<PulseShapeFitOOTPileupCorrection> psFitOOTpuCorr_;
-  
+  std::unique_ptr<PulseShapeFitOOTPileupCorrection> psFitOOTpuCorr_;  
   std::unique_ptr<PedestalSub> pedSubFxn_;
-
-  // S.Brandt Feb19 : Add a pointer to the HLT algo
   std::unique_ptr<HcalDeterministicFit> hltOOTpuCorr_;
+  std::unique_ptr<NewPulseShapes> fPulseShapes_;
+
 };
 
 #endif
