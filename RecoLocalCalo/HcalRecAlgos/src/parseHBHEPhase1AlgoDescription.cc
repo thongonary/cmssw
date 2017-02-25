@@ -67,10 +67,14 @@ parseHBHEMethod3Description(const edm::ParameterSet& conf)
     PedestalSub pedSubFxn;
     pedSubFxn.init(0, iPedSubThreshold, 0.0);
 
+    NewPulseShapes pulseShapes;
+    pulseShapes.init();
+
     std::unique_ptr<HcalDeterministicFit> fit = std::make_unique<HcalDeterministicFit>();
     fit->init( (HcalTimeSlew::ParaSource)iTimeSlewParsType,
-	       HcalTimeSlew::Medium, iApplyTimeSlew,
-	       pedSubFxn, iTimeSlewPars, irespCorrM3);
+	       HcalTimeSlew::Medium, iApplyTimeSlew, 
+	       pedSubFxn, pulseShapes,
+	       iTimeSlewPars, irespCorrM3);
     return fit;
 }
 
