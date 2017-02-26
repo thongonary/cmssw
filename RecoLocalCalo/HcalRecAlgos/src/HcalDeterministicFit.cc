@@ -50,72 +50,34 @@ void HcalDeterministicFit::getLandauFrac(float tStart, float tEnd, float &sum) c
 }
 
 float HcalDeterministicFit::getNegativeEnergyCorr(float fC, float corrTS) const {
-  /*
-  float a4=0, a5=0, b4=0, b5=0, c4=0, c5=0, d4=0, d5=0;
+  float nomsum = fPulseShapes_.getPulseFracNorm(fC,0);
+  float nom4=fPulseShapes_.getPulseFrac(fC,0,4)/nomsum;
+  float nom5=fPulseShapes_.getPulseFrac(fC,0,5)/nomsum;
 
-  double tmpFC=fC;
-  if (fC<loThresh) tmpFC=loThresh;
+  float dsum=fPulseShapes_.getPulseFracNorm(fC,1);
+  float d4=fPulseShapes_.getPulseFrac(fC,1,4)/dsum;
+  float d5=fPulseShapes_.getPulseFrac(fC,1,5)/dsum;
 
-  if (tmpFC < flip[4]) {
-    a4 = par0[4][0];
-    b4 = par1[4][0];
-    c4 = par2[4][0];
-    d4 = par3[4][0];
+  d4-=nom4;
+  d5-=nom5;
 
-    a5 = par0[5][0];
-    b5 = par1[5][0];
-    c5 = par2[5][0];
-    d5 = par3[5][0];
-
-  }
-  else {
-    a4 = par0[4][1];
-    b4 = par1[4][1];
-    c4 = par2[4][1];
-    d4 = par3[4][1];
-
-    a5 = par0[5][1];
-    b5 = par1[5][1];
-    c5 = par2[5][1];
-    d5 = par3[5][1];
-
+  float corrT = 0;
+  if ( d5 != corrTS * d4) {
+    corrT =  ( corrTS * nom4 - nom5 ) / ( d5 - corrTS * d4 );
   }
 
-  TF1 f4("f4","[0]+[1]*log(x)+[2]*log(x)*log(x)+[3]*log(x)*log(x)*log(x)",0,3000);
-  f4.SetParameter(0,a4);
-  f4.SetParameter(1,b4);  
-  f4.SetParameter(2,c4);
-  f4.SetParameter(3,d4);
+  if (abs(corrT)<0.5) {
+    return corrT;
+  }
+  else if (corrT>0.5) {
+    return 0.5;
+  }
+  else if (corrT<-0.5) {
+    return -0.5;
+  }
 
-  TF1 f5("f5","[0]+[1]*log(x)+[2]*log(x)*log(x)+[3]*log(x)*log(x)*log(x)",0,3000);
-  f5.SetParameter(0,a5);
-  f5.SetParameter(1,b5);  
-  f5.SetParameter(2,c5);
-  f5.SetParameter(3,d5);
+  return 0;
 
-  TF1 ts("ts","([0]+[1]*log(x)+[2]*log(x)*log(x)+[3]*log(x)*log(x)*log(x))/([4]+[5]*log(x)+[6]*log(x)*log(x)+[7]*log(x)*log(x)*log(x))",0,3000);
-  ts.SetParameter(4,a4);
-  ts.SetParameter(5,b4);  
-  ts.SetParameter(6,c4);
-  ts.SetParameter(7,d4);
-  ts.SetParameter(0,a5);
-  ts.SetParameter(1,b5);  
-  ts.SetParameter(2,c5);
-  ts.SetParameter(3,d5);
-
-  if (ts.Eval(1500)>corrTS)
-    return 2200;
-  else if (ts.Eval(700)>corrTS) 
-    return 1100;
-  else if (ts.Eval(400)>corrTS) 
-    return 800;
-  else if (ts.Eval(200)>corrTS) 
-    return 300;
-  else if (ts.Eval(100)>corrTS) 
-    return 50;
-  */
-
-  return 10;
 
 }
 
@@ -229,17 +191,19 @@ void HcalDeterministicFit::phase1Apply(const HBHEChannelInfo& channelData,
     if (ch3<negThresh[0]) {
       ch3=negThresh[0];
       ch4=corrCharge[4]/i4;
+      ch4=0;
       ch5=(i4*corrCharge[5]-n4*corrCharge[4])/(i4*i5);
     }
     if (ch5<negThresh[0] && ch4>negThresh[1]) {
       if (useDB2) {
 	float newTS = (corrCharge[5]-negThresh[0]*i5)/(corrCharge[4]-ch3*i3);
-	float newQ = getNegativeEnergyCorr(corrCharge[4], newTS);
-	float i4_new = fPulseShapes_.getPulseFrac(newQ,0,4)/fPulseShapes_.getPulseFracNorm(newQ,0);
+	float newT = getNegativeEnergyCorr(corrCharge[4], newTS);
+	float i4_new = fPulseShapes_.getPulseFrac(corrCharge[4],newT,4)/fPulseShapes_.getPulseFracNorm(corrCharge[4],newT);
 
 	if (i4_new!=0){
 	  ch5=negThresh[0];
 	  ch4=(corrCharge[4]-ch3*n3)/(i4_new);
+	  //ch4=0;
 	}
 
       }

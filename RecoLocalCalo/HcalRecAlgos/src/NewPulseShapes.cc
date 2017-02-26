@@ -15,6 +15,8 @@ NewPulseShapes::~NewPulseShapes() {
 
 void NewPulseShapes::init() {
 
+  //std::cout << "whaaaat the fuckkkkkkkk" << std::endl;
+
   loThresh=10;
   hiThresh=3000;
 
@@ -94,29 +96,50 @@ void NewPulseShapes::init() {
 }
 
 float NewPulseShapes::getPulseFrac(float fC, float time, int ts) const{
-  double frac=0;
+  float frac=0;
   if (ts<0 || ts>=10){
     cout << "wrong value for time slice!" << endl;
     return 0;
   }
-  double tmpFC=fC;
-  if (fC<loThresh) tmpFC=loThresh;
-  else if (fC>hiThresh) tmpFC=hiThresh;
-  else if (tmpFC < flip[ts]) 
+
+  //i'm fucking this up somehow?
+  //std::cout << loThresh << ", " << hiThresh << std::endl;
+
+  float tmpFC=fC;
+  if (fC<10) { 
+    tmpFC=10;
+    //std::cout << "vv" << std::endl;
+  }
+  else if (fC>3000) {
+    tmpFC=3000;
+    //std::cout << "^^" << std::endl;
+  }
+
+  //std::cout << tmpFC << " !! ";
+
+  if (tmpFC < flip[ts]) {
+    //std::cout << log(tmpFC) << " !! " << par0[ts][0] << " !! ";
     frac=par0[ts][0] + par1[ts][0]*log(tmpFC) + par2[ts][0]*log(tmpFC)*log(tmpFC) + par3[ts][0]*log(tmpFC)*log(tmpFC)*log(tmpFC);
-  else 
+  }
+  else {
+    //std::cout << log(tmpFC) << " !! " << par0[ts][1] << " !! ";
     frac=par0[ts][1] + par1[ts][1]*log(tmpFC) + par2[ts][1]*log(tmpFC)*log(tmpFC) + par3[ts][1]*log(tmpFC)*log(tmpFC)*log(tmpFC);
-
-  //frac+=(tpar0[ts]*exp(tpar1[ts]*tmpFC)+tpar2[ts])*time/25; //hack b/c my derivatives are in fractional TS, not time [ns]
-
+  }
+  //std::cout << std::endl;
+  frac+=(tpar0[ts]*exp(tpar1[ts]*tmpFC)+tpar2[ts])*time; //hack b/c my derivatives are in fractional TS, not time [ns]
+  //if (ts==4) std::cout << ">>>> " << tmpFC << " <<<< " <<  std::endl;
+  //return frac;
   if (frac>0.01) return frac;
   else return 0;
 }
 
 float NewPulseShapes::getPulseFracNorm(float fC, float time) const{
   float tempSum=0;
+  //std::cout << "get pulse of " << fC << ", " << time << ": ";
+  //std::cout << getPulseFrac(fC,0,4) << ", " << getPulseFrac(fC,0,5) << std::endl;
   for (int i=0; i<10; i++) {
     tempSum+=getPulseFrac(fC,time,i);
+    //std::cout << getPulseFrac(fC,0,i) << ", ";
   }
   return tempSum;
 }
