@@ -4,7 +4,7 @@ import FWCore.ParameterSet.Config as cms
 m2Parameters = cms.PSet(
 
     applyPedConstraint    = cms.bool(True),
-    applyTimeConstraint   = cms.bool(True),
+    applyTimeConstraint   = cms.bool(False),
     applyPulseJitter      = cms.bool(False),
     applyTimeSlew         = cms.bool(True),           #units
     ts4Min                = cms.double(0.),           #fC
