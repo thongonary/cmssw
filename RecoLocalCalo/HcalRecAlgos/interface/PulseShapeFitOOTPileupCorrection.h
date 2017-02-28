@@ -18,6 +18,7 @@
 #include "Math/Functor.h"
 
 #include "RecoLocalCalo/HcalRecAlgos/src/HybridMinimizer.h"
+#include "RecoLocalCalo/HcalRecAlgos/interface/NewPulseShapes.h"
 
 namespace HcalConst{
 
@@ -34,6 +35,9 @@ namespace FitterFuncs{
    class PulseShapeFunctor {
       public:
      PulseShapeFunctor(const HcalPulseShapes::Shape& pulse,bool iPedestalConstraint, bool iTimeConstraint,bool iAddPulseJitter,bool iAddTimeSlew,
+		       double iPulseJitter,double iTimeMean,double iTimeSig,double iPedMean,double iPedSig,
+		       double iNoise);
+     PulseShapeFunctor(NewPulseShapes pulseShape, bool iPedestalConstraint, bool iTimeConstraint,bool iAddPulseJitter,bool iAddTimeSlew,
 		       double iPulseJitter,double iTimeMean,double iTimeSig,double iPedMean,double iPedSig,
 		       double iNoise);
      ~PulseShapeFunctor();
@@ -56,6 +60,7 @@ namespace FitterFuncs{
      double singlePulseShapeFunc( const double *x );
      double doublePulseShapeFunc( const double *x );
      double triplePulseShapeFunc( const double *x );
+
      
    private:
      std::array<float,HcalConst::maxPSshapeBin> pulse_hist;
@@ -65,6 +70,7 @@ namespace FitterFuncs{
      std::vector<float> accVarLenIdxZEROVec, diffVarItvlIdxZEROVec;
      std::vector<float> accVarLenIdxMinusOneVec, diffVarItvlIdxMinusOneVec;
      void funcHPDShape(std::array<double,HcalConst::maxSamples> & ntmpbin, const double &pulseTime, const double &pulseHeight,const double &slew);
+     void funcNewShape(std::array<double,HcalConst::maxSamples> & ntmpbin, const double &pulseTime, const double &pulseHeight);
      double psFit_x[HcalConst::maxSamples], psFit_y[HcalConst::maxSamples], psFit_erry[HcalConst::maxSamples], psFit_erry2[HcalConst::maxSamples], psFit_slew[HcalConst::maxSamples];
      
      bool pedestalConstraint_;
@@ -83,6 +89,8 @@ namespace FitterFuncs{
      double invertpedSig_, invertpedSig2_;
      std::array<double,HcalConst::maxSamples> pulse_shape_;
      std::array<double,HcalConst::maxSamples> pulse_shape_sum_;
+
+     NewPulseShapes fPulseShapes_;
 
    };
    
@@ -121,6 +129,9 @@ public:
 
     void setPulseShapeTemplate  (const HcalPulseShapes::Shape& ps, bool isHPD);
     void resetPulseShapeTemplate(const HcalPulseShapes::Shape& ps);
+
+    void newSetPulseShapeTemplate(NewPulseShapes pulseShapes_);
+    void newResetPulseShapeTemplate(NewPulseShapes pulseShapes_);
 
 private:
     int pulseShapeFit(const double * energyArr, const double * pedenArr, const double *chargeArr, 
@@ -163,6 +174,8 @@ private:
     double noiseHPD_;
     double noiseSiPM_;
     HcalTimeSlew::BiasSetting slewFlavor_;    
+
+    NewPulseShapes fPulseShapes_;
 
 };
 

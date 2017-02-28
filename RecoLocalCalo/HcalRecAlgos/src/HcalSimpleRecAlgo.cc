@@ -24,6 +24,7 @@ HcalSimpleRecAlgo::HcalSimpleRecAlgo(bool correctForTimeslew, bool correctForPul
   pulseCorr_ = std::make_unique<HcalPulseContainmentManager>(MaximumFractionalError);
   pedSubFxn_ = std::make_unique<PedestalSub>();
   hltOOTpuCorr_ = std::make_unique<HcalDeterministicFit>();
+  fPulseShapes_ = std::make_unique<NewPulseShapes>();
 }
 
 
@@ -66,6 +67,10 @@ void HcalSimpleRecAlgo::setpuCorrParams(bool   iPedestalConstraint, bool iTimeCo
 
   psFitOOTpuCorr_->setChi2Term(1); // isHPD all the time
 
+  fPulseShapes_->init();
+  psFitOOTpuCorr_->newSetPulseShapeTemplate(*fPulseShapes_);
+
+
 //  int shapeNum = HPDShapev3MCNum;
 //  psFitOOTpuCorr_->setPulseShapeTemplate(theHcalPulseShapes_.getShape(shapeNum));
 }
@@ -73,7 +78,7 @@ void HcalSimpleRecAlgo::setpuCorrParams(bool   iPedestalConstraint, bool iTimeCo
 void HcalSimpleRecAlgo::setMeth3Params( bool iApplyTimeSlew, float iPedSubThreshold, int iTimeSlewParsType, std::vector<double> iTimeSlewPars, double irespCorrM3) {
 
   pedSubFxn_->init(0, iPedSubThreshold, 0.0);
-  hltOOTpuCorr_->init((HcalTimeSlew::ParaSource)iTimeSlewParsType, HcalTimeSlew::Medium, iApplyTimeSlew, *pedSubFxn_, iTimeSlewPars,irespCorrM3);
+  hltOOTpuCorr_->init((HcalTimeSlew::ParaSource)iTimeSlewParsType, HcalTimeSlew::Medium, iApplyTimeSlew, *pedSubFxn_, *fPulseShapes_, iTimeSlewPars,irespCorrM3);
 
 }
 
