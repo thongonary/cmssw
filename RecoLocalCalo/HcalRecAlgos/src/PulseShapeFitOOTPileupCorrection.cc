@@ -485,11 +485,6 @@ void PulseShapeFitOOTPileupCorrection::apply(const CaloSamples & cs,
    chi2 = fitParsVec[3];
    useTriple=fitParsVec[4];
 
-  reconstructedEnergy = fitParsVec[0]*gainArr[0];
-  reconstructedTime = fitParsVec[1];
-  chi2 = fitParsVec[3];
-  useTriple = fitParsVec[4];
-
 //  if(doPrint && tsTOTen>20) std::cout << " --> (iEta, iPhi, Depth) = " << channelData.id() << "\n" << "TS        FittedPulse (GeV)        Digi (GeV)" << std::endl;
 //
 //  for(unsigned int ip=0; ip<cssize; ++ip){
