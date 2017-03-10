@@ -5,6 +5,7 @@
 #include <TF1.h>
 
 bool useDB2 = true;
+bool wantPrint=true;
 
 constexpr float HcalDeterministicFit::invGpar[3];
 constexpr float HcalDeterministicFit::negThresh[2];
@@ -90,6 +91,7 @@ void HcalDeterministicFit::phase1Apply(const HBHEChannelInfo& channelData,
   std::vector<double> corrCharge;
   std::vector<double> inputCharge;
   std::vector<double> inputPedestal;
+  double tssum = 0;
   double gainCorr = 0;
   double respCorr = 0;
 
@@ -98,7 +100,7 @@ void HcalDeterministicFit::phase1Apply(const HBHEChannelInfo& channelData,
     double charge = channelData.tsRawCharge(ip);
     double ped = channelData.tsPedestal(ip); 
     double gain = channelData.tsGain(ip);
-
+    tssum += charge - ped;
     gainCorr = gain;
     inputCharge.push_back(charge);
     inputPedestal.push_back(ped);
@@ -230,4 +232,18 @@ void HcalDeterministicFit::phase1Apply(const HBHEChannelInfo& channelData,
   
   reconstructedEnergy=ch4*gainCorr*respCorr;
   reconstructedTime=tsShift4;
+  if(wantPrint && (tssum*gainCorr)>20) 
+  {
+      std::cout << " --> (iEta, iPhi, Depth) = " << channelData.id() << "\n" << "TS        FittedPulse (GeV)        Digi (GeV)" << std::endl;
+      std::cout << "0         0.0                " << inputCharge[0] - inputPedestal[0] << std::endl; 
+      std::cout << "1         0.0                " << inputCharge[1] - inputPedestal[1] << std::endl; 
+      std::cout << "2         0.0                " << inputCharge[2] - inputPedestal[2] << std::endl; 
+      std::cout << "3         " << double(i3*ch3) << "        " << inputCharge[3] - inputPedestal[3] << std::endl; 
+      std::cout << "4         " << double(i4*ch4+n3*ch3) << "        " << inputCharge[4] - inputPedestal[4] << std::endl; 
+      std::cout << "5         " << double(i5*ch5+nn3*ch3+n4*ch4) << "        " << inputCharge[5] - inputPedestal[5] << std::endl; 
+      std::cout << "6         0.0                " << inputCharge[6] - inputPedestal[6] << std::endl; 
+      std::cout << "7         0.0                " << inputCharge[7] - inputPedestal[7] << std::endl; 
+      std::cout << "8         0.0                " << inputCharge[8] - inputPedestal[8] << std::endl; 
+      std::cout << "9         0.0                " << inputCharge[9] - inputPedestal[9] << std::endl; 
+  }
 }

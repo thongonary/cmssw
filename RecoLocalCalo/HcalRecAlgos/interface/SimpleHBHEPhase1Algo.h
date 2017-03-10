@@ -12,7 +12,7 @@
 
 #include "RecoLocalCalo/HcalRecAlgos/interface/PulseShapeFitOOTPileupCorrection.h"
 #include "RecoLocalCalo/HcalRecAlgos/interface/HcalDeterministicFit.h"
-
+#include "RecoLocalCalo/HcalRecAlgos/interface/NewPulseShapes.h"
 
 class SimpleHBHEPhase1Algo : public AbsHBHEPhase1Algo
 {
@@ -102,6 +102,7 @@ private:
     std::unique_ptr<HcalDeterministicFit> hltOOTpuCorr_;
 
     HcalPulseShapes theHcalPulseShapes_;
+    std::unique_ptr<NewPulseShapes> fPulseShapes_;
 };
 
 #endif // RecoLocalCalo_HcalRecAlgos_SimpleHBHEPhase1Algo_h_

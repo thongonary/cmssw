@@ -9,11 +9,15 @@
 
 #include "DataFormats/HcalRecHit/interface/HBHERecHitAuxSetter.h"
 #include "DataFormats/METReco/interface/HcalPhase1FlagLabels.h"
+#include "RecoLocalCalo/HcalRecAlgos/interface/NewPulseShapes.h"
 
 
 // Maximum fractional error for calculating Method 0
 // pulse containment correction
 constexpr float PulseContainmentFractionalError = 0.002f;
+bool doCout=true;
+
+bool usingDB=true;
 
 SimpleHBHEPhase1Algo::SimpleHBHEPhase1Algo(
     const int firstSampleShift,
@@ -57,6 +61,23 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
 
     const HcalDetId channelId(info.id());
 
+    const unsigned cssize = info.nSamples();
+    double tsTOTen = 0;
+    double tsTOT = 0;
+    for(unsigned int ip=0; ip<cssize; ++ip)
+    {
+      if( ip >= (unsigned) 10 ) continue;
+
+      double charge = info.tsRawCharge(ip);
+      double ped = info.tsPedestal(ip);
+      double gain = info.tsGain(ip);
+
+      double energy = charge*gain;
+      double peden = ped*gain;
+
+      tsTOTen += energy - peden;
+      tsTOT += charge - ped;
+    }
     // Calculate "Method 0" quantities
     float m0t = 0.f, m0E = 0.f;
     {
@@ -71,6 +92,10 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
         m0E *= hbminusCorrectionFactor(channelId, m0E, isData);
         m0t = m0Time(info, fc_ampl, calibs, nSamplesToAdd);
     }
+    if (doCout && tsTOTen>20) std::cout << " ============================================================" << std::endl;
+
+    std::string printHelper = "0 (using default pulse shape";
+    if (usingDB) printHelper = "1 (using MC pulse shape)";
 
     // Run "Method 2"
     float m2t = 0.f, m2E = 0.f, chi2 = -1.f;
@@ -78,6 +103,7 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
     const PulseShapeFitOOTPileupCorrection* method2 = psFitOOTpuCorr_.get();
     if (method2)
     {
+        if (doCout && tsTOTen>20) std::cout << "METHOD 2" << printHelper << std::endl;
         psFitOOTpuCorr_->setPulseShapeTemplate(theHcalPulseShapes_.getShape(info.recoShape()),
                                                !info.hasTimeInfo());
         // "phase1Apply" call below sets m2E, m2t, useTriple, and chi2.
@@ -91,6 +117,7 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
     const HcalDeterministicFit* method3 = hltOOTpuCorr_.get();
     if (method3)
     {
+        if (doCout && tsTOTen>20) std::cout << "METHOD 3" << printHelper << std::endl;
         // "phase1Apply" sets m3E and m3t (pased by non-const reference)
         method3->phase1Apply(info, m3E, m3t);
         m3E *= hbminusCorrectionFactor(channelId, m3E, isData);

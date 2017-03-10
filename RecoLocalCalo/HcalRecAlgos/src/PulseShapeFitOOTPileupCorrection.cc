@@ -7,6 +7,11 @@
 
 bool useDB = true;
 
+double pulse_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
+double digi_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
+double noise_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
+bool doPrint=true;
+
 namespace FitterFuncs{
 
   //Decalare the Pulse object take it in from Hcal and set some options
@@ -243,8 +248,12 @@ namespace FitterFuncs{
       }
 
       for (i=0;i<nbins; ++i) 
+      {
         chisq += (psFit_y[i]- pulse_shape_sum_[i])*(psFit_y[i]- pulse_shape_sum_[i])/psFit_erry2[i];
-
+        digi_temp[i] = psFit_y[i];
+        pulse_temp[i] = pulse_shape_sum_[i];
+        noise_temp[i] = psFit_erry[i];
+      }
       if(pedestalConstraint_) {
 	 //Add the pedestal Constraint to chi2
          chisq += invertpedSig2_*(pars[nPars-1] - pedMean_)*(pars[nPars-1]- pedMean_);
@@ -407,8 +416,8 @@ void PulseShapeFitOOTPileupCorrection::apply(const CaloSamples & cs,
 					     bool& useTriple,
 					     float& chi2) const
 {
+   std::cout << "Using apply function.\n";
    psfPtr_->setDefaultcntNANinfit();
-
    const unsigned int cssize = cs.size();
 // initialize arrays to be zero
    double chargeArr[HcalConst::maxSamples]={}, pedArr[HcalConst::maxSamples]={}, gainArr[HcalConst::maxSamples]={};
@@ -475,6 +484,18 @@ void PulseShapeFitOOTPileupCorrection::apply(const CaloSamples & cs,
    reconstructedTime=fitParsVec[1];
    chi2 = fitParsVec[3];
    useTriple=fitParsVec[4];
+
+  reconstructedEnergy = fitParsVec[0]*gainArr[0];
+  reconstructedTime = fitParsVec[1];
+  chi2 = fitParsVec[3];
+  useTriple = fitParsVec[4];
+
+//  if(doPrint && tsTOTen>20) std::cout << " --> (iEta, iPhi, Depth) = " << channelData.id() << "\n" << "TS        FittedPulse (GeV)        Digi (GeV)" << std::endl;
+//
+//  for(unsigned int ip=0; ip<cssize; ++ip){
+//    if( ip >= (unsigned) HcalConst::maxSamples ) continue; // Too many samples than what we wanna fit (10 is enough...) -> skip them
+//    if(doPrint && tsTOTen>20) std::cout << ip << "         " << pulse_temp[ip] << "                " << digi_temp[ip] << std::endl;
+//  }
 
 }
 
@@ -737,4 +758,10 @@ void PulseShapeFitOOTPileupCorrection::phase1Apply(const HBHEChannelInfo& channe
   chi2 = fitParsVec[3];
   useTriple = fitParsVec[4];
 
+  if(doPrint && tsTOTen>20) std::cout << " --> (iEta, iPhi, Depth) = " << channelData.id() << "\n" << "TS        FittedPulse (GeV)        Digi (GeV)" << std::endl;
+
+  for(unsigned int ip=0; ip<cssize; ++ip){
+    if( ip >= (unsigned) HcalConst::maxSamples ) continue; // Too many samples than what we wanna fit (10 is enough...) -> skip them
+    if(doPrint && tsTOTen>20) std::cout << ip << "         " << double(pulse_temp[ip]) << "                " << double(digi_temp[ip]) << std::endl;
+  }
 }
