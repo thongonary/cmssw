@@ -92,9 +92,9 @@ HBHERecHit SimpleHBHEPhase1Algo::reconstruct(const HBHEChannelInfo& info,
         m0E *= hbminusCorrectionFactor(channelId, m0E, isData);
         m0t = m0Time(info, fc_ampl, calibs, nSamplesToAdd);
     }
-    if (doCout && tsTOTen>20) std::cout << " ============================================================" << std::endl;
+    if (doCout && tsTOTen>20) std::cout << "=============================================================" << std::endl;
 
-    std::string printHelper = "0 (using default pulse shape";
+    std::string printHelper = "0 (using default pulse shape)";
     if (usingDB) printHelper = "1 (using MC pulse shape)";
 
     // Run "Method 2"

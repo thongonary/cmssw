@@ -758,7 +758,7 @@ void PulseShapeFitOOTPileupCorrection::phase1Apply(const HBHEChannelInfo& channe
   chi2 = fitParsVec[3];
   useTriple = fitParsVec[4];
 
-  if(doPrint && tsTOTen>20) std::cout << " --> (iEta, iPhi, Depth) = " << channelData.id() << "\n" << "TS        FittedPulse (GeV)        Digi (GeV)" << std::endl;
+  if(doPrint && tsTOTen>20) std::cout << " --> (iEta, iPhi, Depth) = " << channelData.id() << "\n" << "TS        FittedPulse (fC)        Digi (fC)" << std::endl;
 
   for(unsigned int ip=0; ip<cssize; ++ip){
     if( ip >= (unsigned) HcalConst::maxSamples ) continue; // Too many samples than what we wanna fit (10 is enough...) -> skip them
