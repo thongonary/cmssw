@@ -5,7 +5,7 @@
 #include <TF1.h>
 
 bool useDB2 = true;
-bool wantPrint=true;
+bool wantPrint=false;
 
 constexpr float HcalDeterministicFit::invGpar[3];
 constexpr float HcalDeterministicFit::negThresh[2];
@@ -186,9 +186,14 @@ void HcalDeterministicFit::phase1Apply(const HBHEChannelInfo& channelData,
 
   if (i3 != 0 && i4 != 0 && i5 != 0) {
 
-    ch3=corrCharge[3]/i3;
-    ch4=(i3*corrCharge[4]-n3*corrCharge[3])/(i3*i4);
-    ch5=(n3*n4*corrCharge[3]-i4*nn3*corrCharge[3]-i3*n4*corrCharge[4]+i3*i4*corrCharge[5])/(i3*i4*i5);
+//    ch3=corrCharge[3]/i3;
+//    ch4=(i3*corrCharge[4]-n3*corrCharge[3])/(i3*i4);
+//    ch5=(n3*n4*corrCharge[3]-i4*nn3*corrCharge[3]-i3*n4*corrCharge[4]+i3*i4*corrCharge[5])/(i3*i4*i5);
+
+      ch3 = 0; ch5 = 0;
+      ch4 = corrCharge[4]/i4;
+      i3 = 0; n3 = 0; nn3 = 0;
+      i5 = 0;
 
     if (ch3<negThresh[0]) {
       ch3=negThresh[0];

@@ -15,9 +15,9 @@
 // Maximum fractional error for calculating Method 0
 // pulse containment correction
 constexpr float PulseContainmentFractionalError = 0.002f;
-bool doCout=true;
+bool doCout=false;
 
-bool usingDB=true;
+bool usingDB=false;
 
 SimpleHBHEPhase1Algo::SimpleHBHEPhase1Algo(
     const int firstSampleShift,

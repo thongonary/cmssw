@@ -10,7 +10,7 @@ bool useDB = true;
 double pulse_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
 double digi_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
 double noise_temp[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};// TEST
-bool doPrint=true;
+bool doPrint=false;
 
 namespace FitterFuncs{
 
@@ -538,10 +538,10 @@ int PulseShapeFitOOTPileupCorrection::pulseShapeFit(const double * energyArr, co
 // Based on the pulse shape ( 2. likely gives the same performance )
    if(tmpy[2] > 3.*tmpy[3]) BX[2] = 2;
 // Only do three-pulse fit when tstrig < ts4Max_, otherwise one-pulse fit is used (above)
-   if(chi2 > ts4Chi2_ && tstrig < ts4Max_)   { //fails chi2 cut goes straight to 3 Pulse fit
-     fit(3,timevalfit,chargevalfit,pedvalfit,chi2,fitStatus,tsMAX,tsTOTen,tmpy,BX);
-     useTriple=true;
-   }
+//   if(chi2 > ts4Chi2_ && tstrig < ts4Max_)   { //fails chi2 cut goes straight to 3 Pulse fit
+//     fit(3,timevalfit,chargevalfit,pedvalfit,chi2,fitStatus,tsMAX,tsTOTen,tmpy,BX);
+//     useTriple=true;
+//   }
 
    /*
    if(chi2 > ts345Chi2_)   { //fails do two pulse chi2 for TS5 
