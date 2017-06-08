@@ -90,6 +90,50 @@ SUSY_HLT_Razor_QuadJet_RsqMR300 = cms.EDAnalyzer("SUSY_HLT_Razor",
   hemispheres = cms.InputTag('hemispheres')
 )
 
+SUSY_HLT_Razor_Main_RsqMR310 = cms.EDAnalyzer("SUSY_HLT_Razor",
+  trigSummary = cms.InputTag("hltTriggerSummaryAOD"),
+  METCollection = cms.InputTag("pfMet"),
+  jetCollection = cms.InputTag("ak4PFJetsCHS"),
+  TriggerResults = cms.InputTag('TriggerResults','','HLT'),
+  TriggerPath = cms.string('HLT_RsqMR310_Rsq0p09_MR200_v'),
+  TriggerFilter = cms.InputTag('hltRsqMR310Rsq0p09MR200', '', 'HLT'), #the last filter in the path
+  CaloFilter = cms.InputTag('hltRsqMR240Rsq0p0196MR100Calo', '', 'HLT'), #filter implementing cuts on calo MR and Rsq
+  hemispheres = cms.InputTag('hemispheres')
+)
+
+SUSY_HLT_Razor_QuadJet_RsqMR310 = cms.EDAnalyzer("SUSY_HLT_Razor",
+  trigSummary = cms.InputTag("hltTriggerSummaryAOD"),
+  METCollection = cms.InputTag("pfMet"),
+  jetCollection = cms.InputTag("ak4PFJetsCHS"),
+  TriggerResults = cms.InputTag('TriggerResults','','HLT'),
+  TriggerPath = cms.string('HLT_RsqMR310_Rsq0p09_MR200_4jet_v'),
+  TriggerFilter = cms.InputTag('hltRsqMR310Rsq0p09MR200', '', 'HLT'), #the last filter in the path
+  CaloFilter = cms.InputTag('hltRsqMR240Rsq0p0196MR100Calo', '', 'HLT'), #filter implementing cuts on calo MR and Rsq
+  hemispheres = cms.InputTag('hemispheres')
+)
+
+SUSY_HLT_Razor_Main_RsqMR320 = cms.EDAnalyzer("SUSY_HLT_Razor",
+  trigSummary = cms.InputTag("hltTriggerSummaryAOD"),
+  METCollection = cms.InputTag("pfMet"),
+  jetCollection = cms.InputTag("ak4PFJetsCHS"),
+  TriggerResults = cms.InputTag('TriggerResults','','HLT'),
+  TriggerPath = cms.string('HLT_RsqMR320_Rsq0p09_MR200_v'),
+  TriggerFilter = cms.InputTag('hltRsqMR320Rsq0p09MR200', '', 'HLT'), #the last filter in the path
+  CaloFilter = cms.InputTag('hltRsqMR240Rsq0p0196MR100Calo', '', 'HLT'), #filter implementing cuts on calo MR and Rsq
+  hemispheres = cms.InputTag('hemispheres')
+)
+
+SUSY_HLT_Razor_QuadJet_RsqMR320 = cms.EDAnalyzer("SUSY_HLT_Razor",
+  trigSummary = cms.InputTag("hltTriggerSummaryAOD"),
+  METCollection = cms.InputTag("pfMet"),
+  jetCollection = cms.InputTag("ak4PFJetsCHS"),
+  TriggerResults = cms.InputTag('TriggerResults','','HLT'),
+  TriggerPath = cms.string('HLT_RsqMR320_Rsq0p09_MR200_4jet_v'),
+  TriggerFilter = cms.InputTag('hltRsqMR320Rsq0p09MR200', '', 'HLT'), #the last filter in the path
+  CaloFilter = cms.InputTag('hltRsqMR240Rsq0p0196MR100Calo', '', 'HLT'), #filter implementing cuts on calo MR and Rsq
+  hemispheres = cms.InputTag('hemispheres')
+)
+
 SUSY_HLT_Razor_DM_Rsq0p36 = cms.EDAnalyzer("SUSY_HLT_Razor",
   trigSummary = cms.InputTag("hltTriggerSummaryAOD"),
   METCollection = cms.InputTag("pfMet"),
@@ -223,7 +267,7 @@ SUSY_HLT_Razor_DM_Calo_Rsq0p25 = cms.EDAnalyzer("SUSY_HLT_Razor",
 )
 
 SUSY_HLT_Razor_PostVal_POSTPROCESSING = DQMEDHarvester("DQMGenericClient",
-    subDirs        = cms.untracked.vstring("HLT/SUSYBSM/HLT_RsqMR300_Rsq0p09_MR200_v", "HLT/SUSYBSM/HLT_RsqMR300_Rsq0p09_MR200_4jet_v", "HLT/SUSYBSM/HLT_Rsq0p36_v", "HLT/SUSYBSM/HLT_RsqMR270_Rsq0p09_MR200_v", "HLT/SUSYBSM/HLT_RsqMR270_Rsq0p09_MR200_4jet_v", "HLT/SUSYBSM/HLT_Rsq0p30_v", "HLT/SUSYBSM/HLT_RsqMR260_Rsq0p09_MR200_v", "HLT/SUSYBSM/HLT_RsqMR260_Rsq0p09_MR200_4jet_v", "HLT/SUSYBSM/HLT_RsqMR240_Rsq0p09_MR200_v", "HLT/SUSYBSM/HLT_RsqMR240_Rsq0p09_MR200_4jet_v", "HLT/SUSYBSM/HLT_Rsq0p25_v", "HLT/SUSYBSM/HLT_RsqMR240_Rsq0p09_MR200_Calo_v", "HLT/SUSYBSM/HLT_RsqMR240_Rsq0p09_MR200_4jet_Calo_v", "HLT/SUSYBSM/HLT_Rsq0p25_Calo_v", "HLT/SUSYBSM/HLT_Rsq0p02_MR300_TriPFJet80_60_40_BTagCSV_p063_p20_Mbb60_200_v", "HLT/SUSYBSM/HLT_Rsq0p02_MR300_TriPFJet80_60_40_DoubleBTagCSV_p063_Mbb60_200_v"),
+    subDirs        = cms.untracked.vstring("HLT/SUSYBSM/HLT_RsqMR300_Rsq0p09_MR200_v", "HLT/SUSYBSM/HLT_RsqMR300_Rsq0p09_MR200_4jet_v", "HLT/SUSYBSM/HLT_RsqMR310_Rsq0p09_MR200_v", "HLT/SUSYBSM/HLT_RsqMR310_Rsq0p09_MR200_4jet_v", "HLT/SUSYBSM/HLT_RsqMR320_Rsq0p09_MR200_v", "HLT/SUSYBSM/HLT_RsqMR320_Rsq0p09_MR200_4jet_v", "HLT/SUSYBSM/HLT_Rsq0p36_v", "HLT/SUSYBSM/HLT_RsqMR270_Rsq0p09_MR200_v", "HLT/SUSYBSM/HLT_RsqMR270_Rsq0p09_MR200_4jet_v", "HLT/SUSYBSM/HLT_Rsq0p30_v", "HLT/SUSYBSM/HLT_RsqMR260_Rsq0p09_MR200_v", "HLT/SUSYBSM/HLT_RsqMR260_Rsq0p09_MR200_4jet_v", "HLT/SUSYBSM/HLT_RsqMR240_Rsq0p09_MR200_v", "HLT/SUSYBSM/HLT_RsqMR240_Rsq0p09_MR200_4jet_v", "HLT/SUSYBSM/HLT_Rsq0p25_v", "HLT/SUSYBSM/HLT_RsqMR240_Rsq0p09_MR200_Calo_v", "HLT/SUSYBSM/HLT_RsqMR240_Rsq0p09_MR200_4jet_Calo_v", "HLT/SUSYBSM/HLT_Rsq0p25_Calo_v", "HLT/SUSYBSM/HLT_Rsq0p02_MR300_TriPFJet80_60_40_BTagCSV_p063_p20_Mbb60_200_v", "HLT/SUSYBSM/HLT_Rsq0p02_MR300_TriPFJet80_60_40_DoubleBTagCSV_p063_Mbb60_200_v"),
     verbose        = cms.untracked.uint32(2), # Set to 2 for all messages
     resolution     = cms.vstring(""),
     efficiency     = cms.vstring(
